@@ -32,7 +32,7 @@ func initForms() {
     gforms.NewFloatField(
       "weight",
       gforms.Validators{
-        gforms.Required(true),
+        gforms.Required(false),
       },
     ),
   })
@@ -40,6 +40,8 @@ func initForms() {
 ```
 
 ## Validate HTTP request
+
+Server:
 
 ```go
 type User struct {
@@ -66,7 +68,30 @@ func createUserHandler(w http.ResponseWriter, r *http.Request) {
     fmt.Fprintf(w, "%v", form.Errors)
   }
 }
+
+func main() {
+  initForms()
+  http.HandleFunc("/users", createUserHandler)
+  http.ListenAndServe(":9000", nil)
+}
 ```
+
+Client:
+
+```
+$ curl -X GET localhost:9000/users
+<input type="text" name="name"></input>
+<input type="text" name="weight"></input>
+
+$ curl -X POST localhost:9000/users -d 'name=bluele&weight=71.9'
+{bluele 71.9}
+
+# "name" field is required.
+$ curl -X POST localhost:9000/users -d 'weight=71.9'
+map[name:This field is required]
+
+```
+
 
 ## Render HTML-Form
 

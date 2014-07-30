@@ -20,7 +20,7 @@ func initForms() {
 		gforms.NewFloatField(
 			"weight",
 			gforms.Validators{
-				gforms.Required(true),
+				gforms.Required(false),
 			},
 		),
 	})
