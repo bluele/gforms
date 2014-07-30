@@ -165,7 +165,7 @@ form := gforms.DefineForm(gforms.FormFields{
 ### SelectWidget
 
 ```go
-form := gforms.DefineForm(gforms.FormFields{
+Form := gforms.DefineForm(gforms.FormFields{
   gforms.NewTextField(
     "gender",
     gforms.Validators{
@@ -184,12 +184,22 @@ form := gforms.DefineForm(gforms.FormFields{
     ),
   ),
 })
+
+form = Form()
+fmt.Println(form.Html())
+/*
+# output
+<select class="custom">
+<option value="0">Men</option>
+<option value="1">Women</option>
+</select>
+*/
 ```
 
 ### RadioWidget
 
 ```go
-form := gforms.DefineForm(gforms.FormFields{
+Form := gforms.DefineForm(gforms.FormFields{
     gforms.NewTextField(
       "lang",
       gforms.Validators{
@@ -209,6 +219,13 @@ form := gforms.DefineForm(gforms.FormFields{
     ),  
 })
 
+form = Form()
+fmt.Println(form.Html())
+/*
+# output
+<input type="radio" name="lang" value="0">Golang
+<input type="radio" name="lang" value="1" disabled>Python
+*/
 ```
 
 # Author

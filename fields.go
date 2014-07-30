@@ -10,7 +10,6 @@ type Field interface {
 	Html() string
 	html() string
 	GetName() string
-	SetName(string)
 }
 
 type ValidationError interface {
