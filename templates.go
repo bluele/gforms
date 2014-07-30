@@ -13,8 +13,7 @@ const defaultTemplates = `
 {{range $idx, $val := .Options}}<option value="{{$val.Value}}">{{$val.Label}}</option>
 {{end}}</select>{{end}}
 
-{{define "RadioWidget"}}
-{{ $name := .GetName}}{{range $idx, $val := .Options}}<input type="radio" name="{{$name}}" value="{{$val.Value}}"{{if $val.Checked }} checked{{end}}{{if $val.Disabled}} disabled{{end}}>{{$val.Label}}
+{{define "RadioWidget"}}{{ $name := .Name}}{{range $idx, $val := .Options}}<input type="radio" name="{{$name}}" value="{{$val.Value}}"{{if $val.Checked }} checked{{end}}{{if $val.Disabled}} disabled{{end}}>{{$val.Label}}
 {{end}}{{end}}
 `
 
