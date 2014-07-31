@@ -2,8 +2,6 @@ package gforms
 
 import (
 	"bytes"
-	"errors"
-	"fmt"
 )
 
 type RadioWidget struct {
@@ -48,24 +46,6 @@ func (self *RadioWidget) Html(field Field) string {
 		panic(err)
 	}
 	return buffer.String()
-}
-
-func (self *RadioWidget) Validate(value interface{}) error {
-	v, ok := value.(*string)
-	if !ok {
-		return errors.New(fmt.Sprintf("%v is not string-ptr type.", value))
-	}
-	opts := self.Maker()
-	ok = false
-	for i := 0; i < opts.Len(); i++ {
-		if opts.Value(i) == *v {
-			ok = true
-		}
-	}
-	if !ok {
-		return errors.New(fmt.Sprintf("Invalid value %v", *v))
-	}
-	return nil
 }
 
 type RadioOptionsMaker func() RadioOptions

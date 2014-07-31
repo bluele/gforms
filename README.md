@@ -15,13 +15,40 @@ A flexible forms validation and rendering library for golang web development. (u
 go get github.com/bluele/gforms
 ```
 
-## Define Forms
+## Usage
+
+### Define Form
 
 ```go
-var userForm gforms.Form
+userForm := gforms.DefineForm(gforms.NewFields(
+  gforms.NewTextField(
+    "name",
+    gforms.Validators{
+      gforms.Required(true),
+      gforms.MaxLength(32),
+    },
+  ),
+  gforms.NewFloatField(
+    "weight",
+    gforms.Validators{
+      gforms.Required(false),
+    },
+  ),
+))
+```
 
-func initForms() {
-  userForm = gforms.DefineForm(gforms.FormFields{
+### Validate HTTP request
+
+Server:
+
+```go
+type User struct {
+  Name   string  `gforms:"name"`
+  Weight float32 `gforms:"weight"`
+}
+
+func main() {
+  userForm := gforms.DefineForm(gforms.NewFields(
     gforms.NewTextField(
       "name",
       gforms.Validators{
@@ -35,43 +62,22 @@ func initForms() {
         gforms.Required(false),
       },
     ),
+  ))
+
+  http.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
+    form := userForm(r)
+    if r.Method != "POST" {
+      fmt.Fprintf(w, form.Html())
+      return
+    }
+    if form.IsValid() { // Validate request body
+      user := User{}
+      form.MapTo(&user)
+      fmt.Fprintf(w, "%v", user)
+    } else {
+      fmt.Fprintf(w, "%v", form.Errors)
+    }
   })
-}
-```
-
-## Validate HTTP request
-
-Server:
-
-```go
-type User struct {
-  Name   string  `gforms:"name"`
-  Weight float32 `gforms:"weight"`
-}
-
-func createUserHandler(w http.ResponseWriter, r *http.Request) {
-  form := userForm()
-  if r.Method != "POST" { // Show html-form
-    fmt.Fprintf(w, form.Html())
-    return
-  }
-  err := form.ParseRequest(r)
-  if err != nil { // Invalid http-request
-    fmt.Fprintf(w, "%v", err)
-    return
-  }
-  if form.IsValid() { // Validate request body
-    user := User{}
-    form.MapTo(&user)
-    fmt.Fprintf(w, "%v", user)
-  } else {
-    fmt.Fprintf(w, "%v", form.Errors)
-  }
-}
-
-func main() {
-  initForms()
-  http.HandleFunc("/users", createUserHandler)
   http.ListenAndServe(":9000", nil)
 }
 ```
@@ -92,6 +98,62 @@ map[name:This field is required]
 
 ```
 
+### Define Form by struct model
+
+```go
+type User struct {
+  Name   string  `gforms:"name"`
+  Weight float32 `gforms:"weight"`
+}
+
+func initForm() {
+  userForm := gforms.DefineModelForm(
+    User{},
+    gforms.NewFields()
+  )
+}
+```
+
+### Validate HTTP request
+
+Server:
+
+```go
+type User struct {
+  Name   string  `gforms:"name"`
+  Weight float32 `gforms:"weight"`
+}
+
+func main() {
+  userForm := gforms.DefineForm(User{})
+
+  http.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
+    form := userForm(r)
+    if r.Method != "POST" {
+      fmt.Fprintf(w, form.Html())
+      return
+    }
+    if form.IsValid() { // Validate request body
+      user := form.GetModel().(User)
+      fmt.Fprintf(w, "%v", user)
+    } else {
+      fmt.Fprintf(w, "%v", form.Errors)
+    }
+  })
+  http.ListenAndServe(":9000", nil)
+}
+```
+
+Client:
+
+```
+$ curl -X GET localhost:9000/users
+<input type="text" name="name"></input>
+<input type="text" name="weight"></input>
+
+$ curl -X POST localhost:9000/users -d 'name=bluele&weight=71.9'
+{bluele 71.9}
+```
 
 ## Render HTML-Form
 
@@ -110,22 +172,18 @@ fmt.Println(form.Html())
 ## Customize Formfield attributes
 
 ```go
-var customForm gforms.Form
-
-func initForms() {
-  customForm = gforms.DefineForm(gforms.FormFields{
-    gforms.NewTextField(
-      "name",
-      gforms.Validators{
-        gforms.Required(true),
+customForm := gforms.DefineForm(gforms.NewFields(
+  gforms.NewTextField(
+    "name",
+    gforms.Validators{
+      gforms.Required(true),
+    },
+    gforms.NewTextWidget(
+      map[string]string{
+        "class": "custom",
       },
-      gforms.NewTextWidget(
-        map[string]string{
-          "class": "custom",
-        },
-      )),
-  })
-}
+    )),
+))
 ```
 
 ## Support Fields
@@ -133,31 +191,31 @@ func initForms() {
 ### IntegerField
 
 ```go
-form := gforms.DefineForm(gforms.FormFields{
+form := gforms.DefineForm(gforms.NewFields(
   gforms.NewIntegerField(
     "name",
     nil,
-})
+))
 ```
 
 ### FloatField
 
 ```go
-form := gforms.DefineForm(gforms.FormFields{
+form := gforms.DefineForm(gforms.NewFields(
   gforms.NewFloatField(
     "name",
     nil,
-})
+))
 ```
 
 ### TextField
 
 ```go
-form := gforms.DefineForm(gforms.FormFields{
+form := gforms.DefineForm(gforms.NewFields(
   gforms.NewTextField(
     "name",
     nil,
-})
+))
 ```
 
 ## Support Widgets
@@ -165,7 +223,7 @@ form := gforms.DefineForm(gforms.FormFields{
 ### SelectWidget
 
 ```go
-Form := gforms.DefineForm(gforms.FormFields{
+Form := gforms.DefineForm(gforms.NewFields(
   gforms.NewTextField(
     "gender",
     gforms.Validators{
@@ -183,7 +241,7 @@ Form := gforms.DefineForm(gforms.FormFields{
       },
     ),
   ),
-})
+))
 
 form = Form()
 fmt.Println(form.Html())
@@ -199,7 +257,7 @@ fmt.Println(form.Html())
 ### RadioWidget
 
 ```go
-Form := gforms.DefineForm(gforms.FormFields{
+Form := gforms.DefineForm(gforms.NewFields(
     gforms.NewTextField(
       "lang",
       gforms.Validators{
@@ -217,7 +275,7 @@ Form := gforms.DefineForm(gforms.FormFields{
         },
       ),
     ),  
-})
+))
 
 form = Form()
 fmt.Println(form.Html())

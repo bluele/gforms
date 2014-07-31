@@ -2,9 +2,9 @@ package gforms
 
 import (
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 	"unicode"
@@ -12,32 +12,24 @@ import (
 	"unicode/utf8"
 )
 
-type Data map[string]interface{}
-
-func parseReuqestBody(req *http.Request) (*Data, error) {
+func parseReuqestBody(req *http.Request) (*Data, *RawData, error) {
 	contentType := req.Header.Get("Content-Type")
-
 	if req.Method == "POST" || req.Method == "PUT" || contentType != "" {
-		if strings.Contains(contentType, "form-urlencoded") {
-			return bindForm(req)
-		} else if strings.Contains(contentType, "json") {
+		if strings.Contains(contentType, "json") {
 			return bindJson(req)
 		} else {
-			if contentType == "" {
-				return nil, errors.New("Empty Content-Type")
-			} else {
-				return nil, errors.New("Unsupported Content-Type")
-			}
+			return bindForm(req)
 		}
 	}
-	return nil, nil
+	return nil, nil, nil
 }
 
-func bindJson(req *http.Request) (*Data, error) {
+func bindJson(req *http.Request) (*Data, *RawData, error) {
 	var jsonBody map[string]json.RawMessage
-	data := make(Data)
+	data := Data{}
+	rawData := make(RawData)
 	if req.Body == nil {
-		return &data, nil
+		return &data, &rawData, nil
 	}
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -45,36 +37,45 @@ func bindJson(req *http.Request) (*Data, error) {
 	}
 	err = json.Unmarshal(body, &jsonBody)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	for k, v := range jsonBody {
 		switch c := v[0]; c {
 		case 'n':
-			data[k] = ""
+			data[k] = newV([]string{""}, reflect.String)
+			rawData[k] = string(v)
 		case 't', 'f':
-			data[k] = c == 't'
+			if c == 't' {
+				data[k] = newV([]string{"true"}, reflect.String)
+			} else {
+				data[k] = newV([]string{"false"}, reflect.String)
+			}
+			rawData[k] = string(v)
 		case '"':
 			s, ok := unquoteBytes(v)
+			str := string(s)
 			if ok {
-				data[k] = string(s)
+				data[k] = newV([]string{str}, reflect.String)
 			}
+			rawData[k] = str
 		default:
-			data[k] = string(v)
+			data[k] = newV([]string{string(v)}, reflect.String)
+			rawData[k] = string(v)
 		}
 	}
-	return &data, nil
+	return &data, &rawData, nil
 }
 
-func bindForm(req *http.Request) (*Data, error) {
+func bindForm(req *http.Request) (*Data, *RawData, error) {
 	data := make(Data)
-	var dataValue *string = nil
+	rawData := make(RawData)
 	for name, v := range req.Form {
 		if len(v) != 0 {
-			dataValue = &v[0]
-			data[name] = *dataValue
+			data[name] = newV(v, reflect.String)
+			rawData[name] = v[0]
 		}
 	}
-	return &data, nil
+	return &data, &rawData, nil
 }
 
 func unquoteBytes(s []byte) (t []byte, ok bool) {

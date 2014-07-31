@@ -2,9 +2,6 @@ package gforms
 
 import (
 	"bytes"
-	"errors"
-	"fmt"
-	"reflect"
 )
 
 type selectOptionValue struct {
@@ -37,28 +34,6 @@ func (self *SelectWidget) Html(field Field) string {
 	context.Attrs = self.Attrs
 	Template.ExecuteTemplate(&buffer, "SelectWidget", context)
 	return buffer.String()
-}
-
-func (self *SelectWidget) Validate(value interface{}) error {
-	if isNilValue(value) {
-		return nil
-	}
-	v, ok := value.(*string)
-	if !ok {
-		fmt.Println(reflect.TypeOf(value))
-		return errors.New(fmt.Sprintf("%v is not string ptr type.", value))
-	}
-	opts := self.Maker()
-	ok = false
-	for i := 0; i < opts.Len(); i++ {
-		if opts.Value(i) == *v {
-			ok = true
-		}
-	}
-	if !ok {
-		return errors.New(fmt.Sprintf("Not contains %v", *v))
-	}
-	return nil
 }
 
 type ChoiceMaker func() SelectOptions

@@ -7,7 +7,7 @@ import (
 
 type Validator interface {
 	Name() string
-	Validate(interface{}) error
+	Validate(*V) error
 }
 
 type Validators []Validator
@@ -18,8 +18,8 @@ type required struct {
 	Validator
 }
 
-func (self required) Validate(value interface{}) error {
-	if self.IsRequired && isNilValue(value) {
+func (self required) Validate(value *V) error {
+	if self.IsRequired && value.IsNill {
 		return errors.New(self.Message)
 	}
 	return nil
@@ -53,8 +53,8 @@ func MaxLength(length int, message ...string) maxLength {
 	return *self
 }
 
-func (self maxLength) Validate(value interface{}) error {
-	s, ok := value.(*string)
+func (self maxLength) Validate(value *V) error {
+	s, ok := value.Value.(*string)
 	if ok && len(*s) > self.Length {
 		return errors.New(self.Message)
 	}
@@ -78,8 +78,8 @@ func MinLength(length int, message ...string) minLength {
 	return *self
 }
 
-func (self minLength) Validate(value interface{}) error {
-	s, ok := value.(*string)
+func (self minLength) Validate(value *V) error {
+	s, ok := value.Value.(*string)
 	if ok && len(*s) < self.Length {
 		return errors.New(self.Message)
 	}

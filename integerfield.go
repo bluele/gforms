@@ -1,8 +1,8 @@
 package gforms
 
 import (
-	"bytes"
 	"errors"
+	"reflect"
 	"strconv"
 )
 
@@ -10,18 +10,8 @@ type IntegerField struct {
 	BaseField
 }
 
-func (self *IntegerField) Html() string {
-	if self.Widget == nil {
-		return self.html()
-	} else {
-		return self.Widget.Html(self)
-	}
-}
-
-func (self *IntegerField) html() string {
-	var buffer bytes.Buffer
-	Template.ExecuteTemplate(&buffer, "TextTypeField", self)
-	return buffer.String()
+func (self *IntegerField) html(vs ...string) string {
+	return renderTemplate("TextTypeField", newTemplateContext(self, vs...))
 }
 
 func NewIntegerField(name string, vs Validators, ws ...Widget) *IntegerField {
@@ -34,21 +24,20 @@ func NewIntegerField(name string, vs Validators, ws ...Widget) *IntegerField {
 	return self
 }
 
-func (self *IntegerField) Clean(data Data) (interface{}, error) {
-	dataValue, hasField := data[self.name]
+func (self *IntegerField) Clean(data Data) (*V, error) {
+	m, hasField := data[self.GetName()]
 	if hasField {
-		value, ok := dataValue.(string)
-		if !ok {
-			return nil, errors.New("Invalid type.")
-		}
-		if value != "" {
-			v, err := strconv.Atoi(value)
+		v := m.RawValues[0]
+		m.Kind = reflect.Int
+		if v != "" {
+			iv, err := strconv.Atoi(v)
 			if err == nil {
-				return &v, nil
-			} else {
-				return nil, errors.New("This field should be specified as int.")
+				m.Value = iv
+				m.IsNill = false
+				return m, nil
 			}
+			return nil, errors.New("This field should be specified as int.")
 		}
 	}
-	return nil, nil
+	return nilV(), nil
 }
