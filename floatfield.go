@@ -3,6 +3,7 @@ package gforms
 import (
 	"bytes"
 	"errors"
+	"reflect"
 	"strconv"
 )
 
@@ -24,23 +25,22 @@ func (self *FloatField) html() string {
 	return buffer.String()
 }
 
-func (self *FloatField) Clean(data Data) (interface{}, error) {
-	dataValue, hasField := data[self.name]
+func (self *FloatField) Clean(data Data) (*V, error) {
+	m, hasField := data[self.GetName()]
 	if hasField {
-		value, ok := dataValue.(string)
-		if !ok {
-			return nil, errors.New("Invalid type.")
-		}
-		if value != "" {
-			v, err := strconv.ParseFloat(value, 64)
+		v := m.RawValues[0]
+		m.Kind = reflect.Float64
+		if v != "" {
+			fv, err := strconv.ParseFloat(v, 64)
 			if err == nil {
-				return &v, nil
-			} else {
-				return nil, errors.New("This field should be specified as float.")
+				m.Value = fv
+				m.IsNill = false
+				return m, nil
 			}
+			return nil, errors.New("This field should be specified as float.")
 		}
 	}
-	return nil, nil
+	return nilV(), nil
 }
 
 func NewFloatField(name string, vs Validators, ws ...Widget) *FloatField {

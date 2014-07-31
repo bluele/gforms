@@ -5,14 +5,13 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf16"
 	"unicode/utf8"
 )
-
-type Data map[string]interface{}
 
 func parseReuqestBody(req *http.Request) (*Data, error) {
 	contentType := req.Header.Get("Content-Type")
@@ -35,7 +34,7 @@ func parseReuqestBody(req *http.Request) (*Data, error) {
 
 func bindJson(req *http.Request) (*Data, error) {
 	var jsonBody map[string]json.RawMessage
-	data := make(Data)
+	data := Data{}
 	if req.Body == nil {
 		return &data, nil
 	}
@@ -50,16 +49,20 @@ func bindJson(req *http.Request) (*Data, error) {
 	for k, v := range jsonBody {
 		switch c := v[0]; c {
 		case 'n':
-			data[k] = ""
+			data[k] = newV([]string{""}, reflect.String)
 		case 't', 'f':
-			data[k] = c == 't'
+			if c == 't' {
+				data[k] = newV([]string{"true"}, reflect.String)
+			} else {
+				data[k] = newV([]string{"false"}, reflect.String)
+			}
 		case '"':
 			s, ok := unquoteBytes(v)
 			if ok {
-				data[k] = string(s)
+				data[k] = newV([]string{string(s)}, reflect.String)
 			}
 		default:
-			data[k] = string(v)
+			data[k] = newV([]string{string(v)}, reflect.String)
 		}
 	}
 	return &data, nil
@@ -67,11 +70,9 @@ func bindJson(req *http.Request) (*Data, error) {
 
 func bindForm(req *http.Request) (*Data, error) {
 	data := make(Data)
-	var dataValue *string = nil
 	for name, v := range req.Form {
 		if len(v) != 0 {
-			dataValue = &v[0]
-			data[name] = *dataValue
+			data[name] = newV(v, reflect.String)
 		}
 	}
 	return &data, nil

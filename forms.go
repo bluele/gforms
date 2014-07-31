@@ -28,6 +28,10 @@ func DefineForm(fields FormFields) Form {
 	}
 }
 
+type Cleaner interface {
+	Clean(string, Data) (*V, error)
+}
+
 func (self *FormInstance) IsValid() bool {
 	isValid := true
 	cleanedData := CleanedData{}
@@ -35,34 +39,36 @@ func (self *FormInstance) IsValid() bool {
 
 	for _, field := range self.Fields {
 		name := field.GetName()
-		cleanedValue, err := field.Clean(self.Data)
+		widget := field.GetWigdet()
+		var err error
+		var cleanedValue *V
+		if widget == nil {
+			cleanedValue, err = field.Clean(self.Data)
+		} else {
+			if cleaner, ok := widget.(Cleaner); ok {
+				cleanedValue, err = cleaner.Clean(name, self.Data)
+			} else {
+				cleanedValue, err = field.Clean(self.Data)
+			}
+		}
+
 		if err != nil {
 			errors[name] = err.Error()
 			isValid = false
 			break
 		}
+
 		err = field.Validate(cleanedValue)
 		if err != nil {
 			errors[name] = err.Error()
 			isValid = false
 			break
 		}
-		refV := reflect.ValueOf(cleanedValue)
-		if !refV.IsValid() {
+		if cleanedValue.IsNill {
 			cleanedData[name] = nil
-			continue
+		} else {
+			cleanedData[name] = cleanedValue.Value
 		}
-		el := refV.Elem()
-		var v interface{}
-		switch el.Kind() {
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			v = el.Int()
-		case reflect.Float32, reflect.Float64:
-			v = el.Float()
-		case reflect.String:
-			v = el.String()
-		}
-		cleanedData[name] = v
 	}
 
 	if isValid {
@@ -131,6 +137,12 @@ func (self *FormInstance) MapTo(model interface{}) {
 					value = ""
 				}
 				valueField.SetString(value)
+			case reflect.Slice:
+				value, ok := v.([]string)
+				if !ok {
+					value = []string{}
+				}
+				valueField.Set(reflect.ValueOf(value))
 			}
 		}
 	}

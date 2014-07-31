@@ -1,15 +1,16 @@
 package gforms
 
 import (
-	"errors"
+	"reflect"
 )
 
 type Field interface {
-	Clean(data Data) (interface{}, error)
-	Validate(value interface{}) error
+	Clean(Data) (*V, error)
+	Validate(*V) error
 	Html() string
 	html() string
 	GetName() string
+	GetWigdet() Widget
 }
 
 type ValidationError interface {
@@ -27,27 +28,25 @@ func (self *BaseField) GetName() string {
 	return self.name
 }
 
-func (self *BaseField) Clean(data Data) (interface{}, error) {
-	dataValue, hasField := data[self.name]
-	if hasField {
-		value, ok := dataValue.(string)
-		if !ok {
-			return nil, errors.New("Invalid type.")
-		}
-		if value != "" {
-			return &value, nil
-		}
-	}
-	return nil, nil
+func (self *BaseField) GetWigdet() Widget {
+	return self.Widget
 }
 
-func (self *BaseField) Validate(value interface{}) error {
-	if self.Widget != nil {
-		err := self.Widget.Validate(value)
-		if err != nil {
-			return err
+func (self *BaseField) Clean(data Data) (*V, error) {
+	m, hasField := data[self.GetName()]
+	if hasField {
+		v := m.RawValues[0]
+		m.Kind = reflect.String
+		if v != "" {
+			m.Value = v
+			m.IsNill = false
+			return m, nil
 		}
 	}
+	return nilV(), nil
+}
+
+func (self *BaseField) Validate(value *V) error {
 	if self.validators == nil {
 		return nil
 	}

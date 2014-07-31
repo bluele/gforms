@@ -15,6 +15,9 @@ const defaultTemplates = `
 
 {{define "RadioWidget"}}{{ $name := .Name}}{{range $idx, $val := .Options}}<input type="radio" name="{{$name}}" value="{{$val.Value}}"{{if $val.Checked }} checked{{end}}{{if $val.Disabled}} disabled{{end}}>{{$val.Label}}
 {{end}}{{end}}
+
+{{define "CheckboxWidget"}}{{ $name := .Name}}{{range $idx, $val := .Options}}<input type="checkbox" name="{{$name}}" value="{{$val.Value}}"{{if $val.Checked }} checked{{end}}{{if $val.Disabled}} disabled{{end}}>{{$val.Label}}
+{{end}}{{end}}
 `
 
 var Template *template.Template
