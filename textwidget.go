@@ -14,7 +14,7 @@ type parameter struct {
 	Attrs map[string]string
 }
 
-func (self *TextWidget) Html(field Field) string {
+func (self *TextWidget) Html(field Field, vs ...string) string {
 	var buffer bytes.Buffer
 	Template.ExecuteTemplate(&buffer, "TextWidget", parameter{
 		Attrs: self.Attrs,

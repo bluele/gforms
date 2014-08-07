@@ -5,9 +5,9 @@ import (
 )
 
 const defaultTemplates = `
-{{define "TextTypeField"}}<input type="text" name="{{.GetName}}"></input>{{end}}
+{{define "TextTypeField"}}<input type="text" name="{{.Field.GetName}}" value="{{.Value}}"></input>{{end}}
 
-{{define "TextWidget"}}<input type="text" name="{{.Name}}"{{range $attr, $val := .Attrs}} {{$attr}}="{{$val}}"{{end}}></input>{{end}}
+{{define "TextWidget"}}<input type="text" name="{{.Name}}" value=""{{range $attr, $val := .Attrs}} {{$attr}}="{{$val}}"{{end}}></input>{{end}}
 
 {{define "SelectWidget"}}<select {{range $attr, $val := .Attrs}}{{$attr}}="{{$val}}"{{end}}>
 {{range $idx, $val := .Options}}<option value="{{$val.Value}}">{{$val.Label}}</option>

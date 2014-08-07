@@ -1,5 +1,5 @@
 package gforms
 
 type Widget interface {
-	Html(Field) string
+	html(Field, ...string) string
 }

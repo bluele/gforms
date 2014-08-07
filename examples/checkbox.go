@@ -15,7 +15,7 @@ type Multiple struct {
 }
 
 func main() {
-	SForm := gforms.DefineForm(gforms.FormFields{
+	SForm := gforms.DefineForm(gforms.NewFields(
 		gforms.NewTextField(
 			"check",
 			gforms.Validators{
@@ -31,17 +31,12 @@ func main() {
 				},
 			),
 		),
-	})
+	))
 
 	http.HandleFunc("/check", func(w http.ResponseWriter, r *http.Request) {
-		form := SForm()
+		form := SForm(r)
 		if r.Method != "POST" {
 			fmt.Fprintf(w, form.Html())
-			return
-		}
-		err := form.ParseRequest(r)
-		if err != nil { // Invalid http request
-			fmt.Fprintf(w, "%v", err)
 			return
 		}
 		if form.IsValid() {
@@ -53,7 +48,7 @@ func main() {
 		}
 	})
 
-	MForm := gforms.DefineForm(gforms.FormFields{
+	MForm := gforms.DefineForm(gforms.NewFields(
 		gforms.NewTextField(
 			"checks",
 			gforms.Validators{
@@ -69,17 +64,12 @@ func main() {
 				},
 			),
 		),
-	})
+	))
 
 	http.HandleFunc("/checks", func(w http.ResponseWriter, r *http.Request) {
-		form := MForm()
+		form := MForm(r)
 		if r.Method != "POST" {
 			fmt.Fprintf(w, form.Html())
-			return
-		}
-		err := form.ParseRequest(r)
-		if err != nil { // Invalid http request
-			fmt.Fprintf(w, "%v", err)
 			return
 		}
 		if form.IsValid() {

@@ -4,6 +4,8 @@ import (
 	"reflect"
 )
 
+type RawData map[string]string
+
 type Data map[string]*V
 
 type V struct {

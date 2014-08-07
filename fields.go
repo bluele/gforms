@@ -1,14 +1,15 @@
 package gforms
 
 import (
+	"bytes"
 	"reflect"
 )
 
 type Field interface {
 	Clean(Data) (*V, error)
 	Validate(*V) error
-	Html() string
-	html() string
+	html(...string) string
+	Html(...string) string
 	GetName() string
 	GetWigdet() Widget
 }
@@ -57,4 +58,42 @@ func (self *BaseField) Validate(value *V) error {
 		}
 	}
 	return nil
+}
+
+func fieldToHtml(field Field, rd RawData) string {
+	v, hasField := rd[field.GetName()]
+	if field.GetWigdet() == nil {
+		if hasField {
+			return field.html(v)
+		} else {
+			return field.html()
+		}
+	} else {
+		if hasField {
+			return field.GetWigdet().html(field, v)
+		} else {
+			return field.GetWigdet().html(field)
+		}
+	}
+}
+
+type templateContext struct {
+	Field Field
+	Value string
+}
+
+func newTemplateContext(field Field, vs ...string) templateContext {
+	ctx := templateContext{
+		Field: field,
+	}
+	if len(vs) > 0 {
+		ctx.Value = vs[0]
+	}
+	return ctx
+}
+
+func renderTemplate(name string, ctx interface{}) string {
+	var buffer bytes.Buffer
+	Template.ExecuteTemplate(&buffer, name, ctx)
+	return buffer.String()
 }
