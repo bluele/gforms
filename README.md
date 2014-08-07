@@ -125,7 +125,10 @@ type User struct {
 }
 
 func main() {
-  userForm := gforms.DefineForm(User{})
+  userForm := gforms.DefineForm(
+    User{},
+    gforms.NewFields()
+  )
 
   http.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
     form := userForm(r)
