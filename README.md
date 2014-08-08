@@ -189,6 +189,20 @@ customForm := gforms.DefineForm(gforms.NewFields(
 ))
 ```
 
+## Custom Validation error message
+
+```go
+userForm := gforms.DefineForm(gforms.NewFields(
+  gforms.NewTextField(
+    "name",
+    gforms.Validators{
+      gforms.Required(true, "Custom error required message."),
+      gforms.MaxLength(32, "Custom error maxlength message."),
+    },
+  ),
+))
+```
+
 ## Support Fields
 
 ### IntegerField
