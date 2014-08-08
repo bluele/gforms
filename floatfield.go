@@ -10,6 +10,10 @@ type FloatField struct {
 	BaseField
 }
 
+func (self *FloatField) Html(rd RawData) string {
+	return fieldToHtml(self, rd)
+}
+
 func (self *FloatField) html(vs ...string) string {
 	return renderTemplate("TextTypeField", newTemplateContext(self, vs...))
 }

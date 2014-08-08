@@ -8,8 +8,8 @@ import (
 type Field interface {
 	Clean(Data) (*V, error)
 	Validate(*V) error
+	Html(RawData) string
 	html(...string) string
-	Html(...string) string
 	GetName() string
 	GetWigdet() Widget
 }

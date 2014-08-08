@@ -21,6 +21,10 @@ func (self *Fields) NamedBy(name string) (Field, bool) {
 	return v, ok
 }
 
+func (self *Fields) GetMap() map[string]Field {
+	return self.fieldsMap
+}
+
 func (self *Fields) AddField(field Field) bool {
 	name := field.GetName()
 	_, exists := self.NamedBy(name)
@@ -49,7 +53,7 @@ type FormInstance struct {
 	Data        Data
 	RawData     RawData
 	CleanedData CleanedData
-	Errors      map[string]string
+	Errors      Errors
 	request     *http.Request
 }
 
@@ -223,7 +227,7 @@ func (self *FormInstance) parseRequest(req *http.Request) error {
 func (self *FormInstance) Html() string {
 	var html bytes.Buffer
 	for _, field := range self.Fields.fields {
-		html.WriteString(fieldToHtml(field, self.RawData) + "\n")
+		html.WriteString(field.Html(self.RawData) + "\n")
 	}
 	return html.String()
 }

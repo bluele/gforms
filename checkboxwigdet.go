@@ -26,7 +26,7 @@ type CheckboxContext struct {
 	Options checkboxOptionValues
 }
 
-func (self *CheckboxWidget) Html(field Field) string {
+func (self *CheckboxWidget) html(field Field, vs ...string) string {
 	var buffer bytes.Buffer
 	cx := new(CheckboxContext)
 	opts := self.Maker()

@@ -10,6 +10,10 @@ type IntegerField struct {
 	BaseField
 }
 
+func (self *IntegerField) Html(rd RawData) string {
+	return fieldToHtml(self, rd)
+}
+
 func (self *IntegerField) html(vs ...string) string {
 	return renderTemplate("TextTypeField", newTemplateContext(self, vs...))
 }

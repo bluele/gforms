@@ -25,7 +25,7 @@ type RadioContext struct {
 	Options radioOptionValues
 }
 
-func (self *RadioWidget) Html(field Field) string {
+func (self *RadioWidget) html(field Field, vs ...string) string {
 	var buffer bytes.Buffer
 	cx := new(RadioContext)
 	opts := self.Maker()

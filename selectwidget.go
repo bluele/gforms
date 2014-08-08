@@ -23,7 +23,7 @@ type SelectWidget struct {
 	Widget
 }
 
-func (self *SelectWidget) Html(field Field) string {
+func (self *SelectWidget) html(field Field, vs ...string) string {
 	var buffer bytes.Buffer
 	context := new(SelectContext)
 	opts := self.Maker()

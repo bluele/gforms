@@ -4,6 +4,10 @@ type TextField struct {
 	BaseField
 }
 
+func (self *TextField) Html(rd RawData) string {
+	return fieldToHtml(self, rd)
+}
+
 func (self *TextField) html(vs ...string) string {
 	return renderTemplate("TextTypeField", newTemplateContext(self, vs...))
 }
