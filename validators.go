@@ -3,6 +3,7 @@ package gforms
 import (
 	"errors"
 	"fmt"
+	"reflect"
 )
 
 type Validator interface {
@@ -54,8 +55,11 @@ func MaxLength(length int, message ...string) maxLength {
 }
 
 func (self maxLength) Validate(value *V) error {
-	s, ok := value.Value.(*string)
-	if ok && len(*s) > self.Length {
+	if value.IsNill || value.Kind != reflect.String {
+		return nil
+	}
+	s := value.Value.(string)
+	if len(s) > self.Length {
 		return errors.New(self.Message)
 	}
 	return nil
@@ -79,8 +83,11 @@ func MinLength(length int, message ...string) minLength {
 }
 
 func (self minLength) Validate(value *V) error {
-	s, ok := value.Value.(*string)
-	if ok && len(*s) < self.Length {
+	if value.IsNill || value.Kind != reflect.String {
+		return nil
+	}
+	s := value.Value.(string)
+	if len(s) < self.Length {
 		return errors.New(self.Message)
 	}
 	return nil
