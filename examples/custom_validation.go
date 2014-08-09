@@ -18,7 +18,7 @@ type CustomValidator struct {
 }
 
 func (self CustomValidator) Validate(v *gforms.V) error {
-	if !v.IsNill && v.Kind == reflect.String {
+	if !v.IsNil && v.Kind == reflect.String {
 		s := v.Value.(string)
 		for _, t := range self.Langs {
 			if s == t {

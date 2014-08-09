@@ -27,7 +27,7 @@ func (self *FloatField) Clean(data Data) (*V, error) {
 			fv, err := strconv.ParseFloat(v, 64)
 			if err == nil {
 				m.Value = fv
-				m.IsNill = false
+				m.IsNil = false
 				return m, nil
 			}
 			return nil, errors.New("This field should be specified as float.")

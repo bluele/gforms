@@ -37,7 +37,7 @@ func (self *IntegerField) Clean(data Data) (*V, error) {
 			iv, err := strconv.Atoi(v)
 			if err == nil {
 				m.Value = iv
-				m.IsNill = false
+				m.IsNil = false
 				return m, nil
 			}
 			return nil, errors.New("This field should be specified as int.")

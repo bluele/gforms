@@ -40,7 +40,7 @@ func (self *BaseField) Clean(data Data) (*V, error) {
 		m.Kind = reflect.String
 		if v != "" {
 			m.Value = v
-			m.IsNill = false
+			m.IsNil = false
 			return m, nil
 		}
 	}

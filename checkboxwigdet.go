@@ -54,7 +54,7 @@ func (self *CheckboxWidget) Clean(name string, data Data) (*V, error) {
 	if hasField {
 		m.Kind = reflect.Slice
 		m.Value = m.RawValues
-		m.IsNill = false
+		m.IsNil = false
 		return m, nil
 	}
 	return nilV(), nil
