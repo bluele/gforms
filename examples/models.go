@@ -18,7 +18,7 @@ func main() {
 		gforms.NewTextField(
 			"name",
 			gforms.Validators{
-				gforms.Required(true),
+				gforms.Required(),
 			},
 		),
 	))

@@ -24,15 +24,13 @@ userForm := gforms.DefineForm(gforms.NewFields(
   gforms.NewTextField(
     "name",
     gforms.Validators{
-      gforms.Required(true),
+      gforms.Required(),
       gforms.MaxLength(32),
     },
   ),
   gforms.NewFloatField(
     "weight",
-    gforms.Validators{
-      gforms.Required(false),
-    },
+    gforms.Validators{},
   ),
 ))
 ```
@@ -52,15 +50,13 @@ func main() {
     gforms.NewTextField(
       "name",
       gforms.Validators{
-        gforms.Required(true),
+        gforms.Required(),
         gforms.MaxLength(32),
       },
     ),
     gforms.NewFloatField(
       "weight",
-      gforms.Validators{
-        gforms.Required(false),
-      },
+      gforms.Validators{},
     ),
   ))
 
@@ -179,7 +175,7 @@ customForm := gforms.DefineForm(gforms.NewFields(
   gforms.NewTextField(
     "name",
     gforms.Validators{
-      gforms.Required(true),
+      gforms.Required(),
     },
     gforms.NewTextWidget(
       map[string]string{
@@ -196,7 +192,7 @@ userForm := gforms.DefineForm(gforms.NewFields(
   gforms.NewTextField(
     "name",
     gforms.Validators{
-      gforms.Required(true, "Custom error required message."),
+      gforms.Required("Custom error required message."),
       gforms.MaxLength(32, "Custom error maxlength message."),
     },
   ),
@@ -244,7 +240,7 @@ Form := gforms.DefineForm(gforms.NewFields(
   gforms.NewTextField(
     "gender",
     gforms.Validators{
-      gforms.Required(true),
+      gforms.Required(),
     },
     gforms.NewSelectWidget(
       map[string]string{
@@ -278,7 +274,7 @@ Form := gforms.DefineForm(gforms.NewFields(
     gforms.NewTextField(
       "lang",
       gforms.Validators{
-        gforms.Required(true),
+        gforms.Required(),
       },
       gforms.NewRadioWidget(
         map[string]string{

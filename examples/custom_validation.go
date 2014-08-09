@@ -35,7 +35,7 @@ func main() {
 		gforms.NewTextField(
 			"name",
 			gforms.Validators{
-				gforms.Required(true),
+				gforms.Required(),
 				CustomValidator{
 					Langs: []string{"golang", "python", "c"},
 				},

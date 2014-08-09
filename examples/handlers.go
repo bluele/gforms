@@ -16,15 +16,13 @@ func main() {
 		gforms.NewTextField(
 			"name",
 			gforms.Validators{
-				gforms.Required(true),
+				gforms.Required(),
 				gforms.MaxLength(32),
 			},
 		),
 		gforms.NewFloatField(
 			"weight",
-			gforms.Validators{
-				gforms.Required(false),
-			},
+			gforms.Validators{},
 		),
 	))
 

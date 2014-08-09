@@ -19,7 +19,7 @@ func main() {
 		gforms.NewTextField(
 			"check",
 			gforms.Validators{
-				gforms.Required(true),
+				gforms.Required(),
 			},
 			gforms.NewCheckboxWidget(
 				map[string]string{},
@@ -52,7 +52,7 @@ func main() {
 		gforms.NewTextField(
 			"checks",
 			gforms.Validators{
-				gforms.Required(true),
+				gforms.Required(),
 			},
 			gforms.NewCheckboxWidget(
 				map[string]string{},

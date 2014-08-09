@@ -14,21 +14,19 @@ type Validator interface {
 type Validators []Validator
 
 type required struct {
-	IsRequired bool
-	Message    string
+	Message string
 	Validator
 }
 
 func (self required) Validate(value *V) error {
-	if self.IsRequired && value.IsNil {
+	if value.IsNil {
 		return errors.New(self.Message)
 	}
 	return nil
 }
 
-func Required(isRequired bool, message ...string) required {
+func Required(message ...string) required {
 	self := new(required)
-	self.IsRequired = isRequired
 	if len(message) > 0 {
 		self.Message = message[0]
 	} else {
