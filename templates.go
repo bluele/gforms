@@ -9,8 +9,8 @@ const defaultTemplates = `
 
 {{define "TextWidget"}}<input type="text" name="{{.Name}}" value=""{{range $attr, $val := .Attrs}} {{$attr}}="{{$val}}"{{end}}></input>{{end}}
 
-{{define "SelectWidget"}}<select {{range $attr, $val := .Attrs}}{{$attr}}="{{$val}}"{{end}}>
-{{range $idx, $val := .Options}}<option value="{{$val.Value | html}}">{{$val.Label}}</option>
+{{define "SelectWidget"}}<select name="{{.Name}}"{{range $attr, $val := .Attrs}}{{$attr}}="{{$val}}"{{end}}>
+{{range $idx, $val := .Options}}<option value="{{$val.Value | html}}"{{if $val.Selected }} selected{{end}}{{if $val.Disabled}} disabled{{end}}>{{$val.Label}}</option>
 {{end}}</select>{{end}}
 
 {{define "RadioWidget"}}{{ $name := .Name}}{{range $idx, $val := .Options}}<input type="radio" name="{{$name}}" value="{{$val.Value | html}}"{{if $val.Checked }} checked{{end}}{{if $val.Disabled}} disabled{{end}}>{{$val.Label}}
