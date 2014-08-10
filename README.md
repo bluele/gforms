@@ -121,7 +121,7 @@ type User struct {
 }
 
 func main() {
-  userForm := gforms.DefineForm(
+  userForm := gforms.DefineModelForm(
     User{},
     gforms.NewFields()
   )
