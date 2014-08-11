@@ -186,14 +186,14 @@ func (self *FormInstance) IsValid() bool {
 		if err != nil {
 			errors[name] = err.Error()
 			isValid = false
-			break
+			continue
 		}
 
 		err = field.Validate(cleanedValue)
 		if err != nil {
 			errors[name] = err.Error()
 			isValid = false
-			break
+			continue
 		}
 		if cleanedValue.IsNil {
 			cleanedData[name] = nil
