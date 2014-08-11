@@ -8,6 +8,7 @@ import (
 
 type User struct {
 	Name   string  `gforms:"name"`
+	Email  string  `gforms:"email"`
 	Weight float32 `gforms:"weight"`
 }
 
@@ -18,6 +19,13 @@ func main() {
 			gforms.Validators{
 				gforms.Required(),
 				gforms.MaxLength(32),
+			},
+		),
+		gforms.NewTextField(
+			"email",
+			gforms.Validators{
+				gforms.Required(),
+				gforms.EmailValidator(),
 			},
 		),
 		gforms.NewFloatField(
