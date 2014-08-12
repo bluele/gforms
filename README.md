@@ -94,7 +94,7 @@ map[name:This field is required]
 
 ```
 
-### Define Form by struct model
+### Define Form by Struct Model
 
 ```go
 type User struct {
@@ -105,7 +105,14 @@ type User struct {
 func initForm() {
   userForm := gforms.DefineModelForm(
     User{},
-    gforms.NewFields()
+    // override User.name field
+    gforms.NewTextField(
+      "name",
+      gforms.Validators{
+        gforms.Required(),
+        gforms.MaxLength(32),
+      },
+    ),
   )
 }
 ```
@@ -123,7 +130,14 @@ type User struct {
 func main() {
   userForm := gforms.DefineModelForm(
     User{},
-    gforms.NewFields()
+    // override User.name field
+    gforms.NewTextField(
+      "name",
+      gforms.Validators{
+        gforms.Required(),
+        gforms.MaxLength(32),
+      },
+    ),
   )
 
   http.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
@@ -152,6 +166,10 @@ $ curl -X GET localhost:9000/users
 
 $ curl -X POST localhost:9000/users -d 'name=bluele&weight=71.9'
 {bluele 71.9}
+
+# "name" field is required.
+$ curl -X POST localhost:9000/users -d 'weight=71.9'
+map[name:This field is required]
 ```
 
 ## Render HTML-Form
@@ -207,7 +225,7 @@ userForm := gforms.DefineForm(gforms.NewFields(
 form := gforms.DefineForm(gforms.NewFields(
   gforms.NewIntegerField(
     "name",
-    nil,
+    gforms.Validators{},
 ))
 ```
 
@@ -217,7 +235,7 @@ form := gforms.DefineForm(gforms.NewFields(
 form := gforms.DefineForm(gforms.NewFields(
   gforms.NewFloatField(
     "name",
-    nil,
+    gforms.Validators{},
 ))
 ```
 
@@ -227,7 +245,7 @@ form := gforms.DefineForm(gforms.NewFields(
 form := gforms.DefineForm(gforms.NewFields(
   gforms.NewTextField(
     "name",
-    nil,
+    gforms.Validators{},
 ))
 ```
 
@@ -296,6 +314,38 @@ fmt.Println(form.Html())
 # output
 <input type="radio" name="lang" value="0">Golang
 <input type="radio" name="lang" value="1" disabled>Python
+*/
+```
+
+### CheckboxWidget
+
+```go
+Form := gforms.DefineForm(gforms.NewFields(
+    gforms.NewTextField(
+      "lang",
+      gforms.Validators{
+        gforms.Required(),
+      },
+      gforms.NewRadioWidget(
+        map[string]string{
+          "class": "custom",
+        },
+        func() gforms.RadioOptions {
+          return gforms.StringRadioOptions([][]string{
+            {"Golang", "0", "false", "false"},
+            {"Python", "1", "false", "true"},
+          })
+        },
+      ),
+    ),
+))
+
+form := Form()
+fmt.Println(form.Html())
+/*
+# output
+<input type="checkbox" name="lang" value="0">Golang
+<input type="checkbox" name="lang" value="1" disabled>Python
 */
 ```
 
