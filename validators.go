@@ -26,34 +26,36 @@ func (self required) Validate(value *V) error {
 	return nil
 }
 
+// Returns error if the field is not provided.
 func Required(message ...string) required {
-	self := new(required)
+	self := required{}
 	if len(message) > 0 {
 		self.Message = message[0]
 	} else {
 		self.Message = "This field is required"
 	}
-	return *self
+	return self
 }
 
-type maxLength struct {
+type maxLengthValidator struct {
 	Length  int
 	Message string
 	Validator
 }
 
-func MaxLength(length int, message ...string) maxLength {
-	self := new(maxLength)
+// Returns error if the length of value is greater than length argument.
+func MaxLengthValidator(length int, message ...string) maxLengthValidator {
+	self := maxLengthValidator{}
 	self.Length = length
 	if len(message) > 0 {
 		self.Message = message[0]
 	} else {
 		self.Message = fmt.Sprintf("Ensure this value has at most %v characters.", self.Length)
 	}
-	return *self
+	return self
 }
 
-func (self maxLength) Validate(value *V) error {
+func (self maxLengthValidator) Validate(value *V) error {
 	if value.IsNil || value.Kind != reflect.String {
 		return nil
 	}
@@ -64,24 +66,25 @@ func (self maxLength) Validate(value *V) error {
 	return nil
 }
 
-type minLength struct {
+type minLengthValidator struct {
 	Length  int
 	Message string
 	Validator
 }
 
-func MinLength(length int, message ...string) minLength {
-	self := new(minLength)
+// Returns error if the length of value is less than length argument..
+func MinLengthValidator(length int, message ...string) minLengthValidator {
+	self := minLengthValidator{}
 	self.Length = length
 	if len(message) > 0 {
 		self.Message = message[0]
 	} else {
 		self.Message = fmt.Sprintf("Ensure this value has at least %v characters", self.Length)
 	}
-	return *self
+	return self
 }
 
-func (self minLength) Validate(value *V) error {
+func (self minLengthValidator) Validate(value *V) error {
 	if value.IsNil || value.Kind != reflect.String {
 		return nil
 	}
@@ -109,6 +112,8 @@ func (self regexpValidator) Validate(value *V) error {
 	return nil
 }
 
+// The regular expression pattern to search for the provided value.
+// Returns error if regxp#MatchString is False.
 func RegexpValidator(regex string, message ...string) regexpValidator {
 	self := regexpValidator{}
 	re, err := regexp.Compile(regex)
@@ -124,6 +129,7 @@ func RegexpValidator(regex string, message ...string) regexpValidator {
 	return self
 }
 
+// An EmailValidator that ensures a value looks like an email address.
 func EmailValidator(message ...string) regexpValidator {
 	regex := `^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`
 	if len(message) > 0 {

@@ -25,7 +25,7 @@ userForm := gforms.DefineForm(gforms.NewFields(
     "name",
     gforms.Validators{
       gforms.Required(),
-      gforms.MaxLength(32),
+      gforms.MaxLengthValidator(32),
     },
   ),
   gforms.NewFloatField(
@@ -51,7 +51,7 @@ func main() {
       "name",
       gforms.Validators{
         gforms.Required(),
-        gforms.MaxLength(32),
+        gforms.MaxLengthValidator(32),
       },
     ),
     gforms.NewFloatField(
@@ -92,6 +92,9 @@ $ curl -X POST localhost:9000/users -d 'name=bluele&weight=71.9'
 $ curl -X POST localhost:9000/users -d 'weight=71.9'
 map[name:This field is required]
 
+# also support json request
+$ curl -X POST -H "Content-type: application/json" localhost:9000/users -d '{"name":"bluele", "weight":71.9}'
+{bluele 71.9}
 ```
 
 ### Define Form by Struct Model
@@ -110,7 +113,7 @@ func initForm() {
       "name",
       gforms.Validators{
         gforms.Required(),
-        gforms.MaxLength(32),
+        gforms.MaxLengthValidator(32),
       },
     ),
   )
@@ -135,7 +138,7 @@ func main() {
       "name",
       gforms.Validators{
         gforms.Required(),
-        gforms.MaxLength(32),
+        gforms.MaxLengthValidator(32),
       },
     ),
   )
@@ -170,6 +173,9 @@ $ curl -X POST localhost:9000/users -d 'name=bluele&weight=71.9'
 # "name" field is required.
 $ curl -X POST localhost:9000/users -d 'weight=71.9'
 map[name:This field is required]
+
+# also support json request
+$ curl -X POST -H "Content-type: application/json" localhost:9000/users -d '{"name":"bluele", "weight":71.9}'
 ```
 
 ## Render HTML-Form
@@ -211,7 +217,7 @@ userForm := gforms.DefineForm(gforms.NewFields(
     "name",
     gforms.Validators{
       gforms.Required("Custom error required message."),
-      gforms.MaxLength(32, "Custom error maxlength message."),
+      gforms.MaxLengthValidator(32, "Custom error maxlength message."),
     },
   ),
 ))
@@ -247,6 +253,58 @@ form := gforms.DefineForm(gforms.NewFields(
     "name",
     gforms.Validators{},
 ))
+```
+
+## Support Validators
+
+### Required validator
+
+Added an error msg to FormInstance.Errors if the field is not provided.
+
+```go
+gforms.Validators{
+  gforms.Required(),
+},
+```
+
+### Regexp validator
+
+Added an error msg to FormInstance.Errors if the regexp doesn't matched a value.
+
+```go
+gforms.Validators{
+  gforms.RegexpValidator("number-\d+"),
+},
+```
+
+### Email validator
+
+Added an error msg to FormInstance.Errors if a value looks like an email address.
+
+```go
+gforms.Validators{
+  gforms.EmailValidator(),
+},
+```
+
+### MinLength Validator
+
+Added an error msg to FormInstance.Errors if the length of value is less than specified first argument.
+
+```go
+gforms.Validators{
+  gforms.MinLengthValidator(16),
+},
+```
+
+### MaxLength Validator
+
+Added an error msg to FormInstance.Errors if the length of value is greater than specified first argument.
+
+```go
+gforms.Validators{
+  gforms.MaxLengthValidator(256),
+},
 ```
 
 ## Support Widgets

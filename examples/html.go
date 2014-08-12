@@ -17,7 +17,7 @@ func main() {
 			"name",
 			gforms.Validators{
 				gforms.Required(),
-				gforms.MaxLength(32),
+				gforms.MaxLengthValidator(32),
 			},
 		),
 		gforms.NewFloatField(
