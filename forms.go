@@ -189,7 +189,7 @@ func (self *FormInstance) IsValid() bool {
 			continue
 		}
 
-		err = field.Validate(cleanedValue)
+		err = field.Validate(cleanedValue, cleanedData)
 		if err != nil {
 			errors[name] = err.Error()
 			isValid = false

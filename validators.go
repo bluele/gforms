@@ -9,7 +9,7 @@ import (
 
 type Validator interface {
 	Name() string
-	Validate(*V) error
+	Validate(*V, CleanedData) error
 }
 
 type Validators []Validator
@@ -19,7 +19,7 @@ type required struct {
 	Validator
 }
 
-func (self required) Validate(value *V) error {
+func (self required) Validate(value *V, cleanedData CleanedData) error {
 	if value.IsNil {
 		return errors.New(self.Message)
 	}
@@ -55,7 +55,7 @@ func MaxLengthValidator(length int, message ...string) maxLengthValidator {
 	return self
 }
 
-func (self maxLengthValidator) Validate(value *V) error {
+func (self maxLengthValidator) Validate(value *V, cleanedData CleanedData) error {
 	if value.IsNil || value.Kind != reflect.String {
 		return nil
 	}
@@ -72,7 +72,7 @@ type minLengthValidator struct {
 	Validator
 }
 
-// Returns error if the length of value is less than length argument..
+// Returns error if the length of value is less than length argument.
 func MinLengthValidator(length int, message ...string) minLengthValidator {
 	self := minLengthValidator{}
 	self.Length = length
@@ -84,7 +84,7 @@ func MinLengthValidator(length int, message ...string) minLengthValidator {
 	return self
 }
 
-func (self minLengthValidator) Validate(value *V) error {
+func (self minLengthValidator) Validate(value *V, cleanedData CleanedData) error {
 	if value.IsNil || value.Kind != reflect.String {
 		return nil
 	}
@@ -101,7 +101,7 @@ type regexpValidator struct {
 	Validator
 }
 
-func (self regexpValidator) Validate(value *V) error {
+func (self regexpValidator) Validate(value *V, cleanedData CleanedData) error {
 	if value.IsNil || value.Kind != reflect.String {
 		return nil
 	}

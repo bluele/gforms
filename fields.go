@@ -7,7 +7,7 @@ import (
 
 type Field interface {
 	Clean(Data) (*V, error)
-	Validate(*V) error
+	Validate(*V, CleanedData) error
 	Html(RawData) string
 	html(...string) string
 	GetName() string
@@ -47,12 +47,12 @@ func (self *BaseField) Clean(data Data) (*V, error) {
 	return nilV(), nil
 }
 
-func (self *BaseField) Validate(value *V) error {
+func (self *BaseField) Validate(value *V, cleanedData CleanedData) error {
 	if self.validators == nil {
 		return nil
 	}
 	for _, v := range self.validators {
-		err := v.Validate(value)
+		err := v.Validate(value, cleanedData)
 		if err != nil {
 			return err
 		}
