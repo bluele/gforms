@@ -138,3 +138,13 @@ func EmailValidator(message ...string) regexpValidator {
 		return RegexpValidator(regex, "Enter a valid email address.")
 	}
 }
+
+// An URLValidator that ensures a value looks like an url.
+func URLValidator(message ...string) regexpValidator {
+	regex := `^(https?|ftp)(:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+)$`
+	if len(message) > 0 {
+		return RegexpValidator(regex, message[0])
+	} else {
+		return RegexpValidator(regex, "Enter a valid url.")
+	}
+}

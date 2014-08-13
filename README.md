@@ -279,11 +279,21 @@ gforms.Validators{
 
 ### Email validator
 
-Added an error msg to FormInstance.Errors if a value looks like an email address.
+Added an error msg to FormInstance.Errors if a value doesn't looks like an email address.
 
 ```go
 gforms.Validators{
   gforms.EmailValidator(),
+},
+```
+
+### URL Validator
+
+Added an error msg to FormInstance.Errors if a value doesn't looks like an url.
+
+```go
+gforms.Validators{
+  gforms.URLValidator(),
 },
 ```
 
