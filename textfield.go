@@ -12,6 +12,7 @@ func (self *TextField) html(vs ...string) string {
 	return renderTemplate("TextTypeField", newTemplateContext(self, vs...))
 }
 
+// Create a new field for string value.
 func NewTextField(name string, vs Validators, ws ...Widget) *TextField {
 	self := new(TextField)
 	self.name = name

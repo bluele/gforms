@@ -21,7 +21,7 @@ func (self *FloatField) html(vs ...string) string {
 func (self *FloatField) Clean(data Data) (*V, error) {
 	m, hasField := data[self.GetName()]
 	if hasField {
-		v := m.RawValues[0]
+		v := m.rawValueAsString()
 		m.Kind = reflect.Float64
 		if v != "" {
 			fv, err := strconv.ParseFloat(v, 64)
@@ -36,6 +36,7 @@ func (self *FloatField) Clean(data Data) (*V, error) {
 	return nilV(), nil
 }
 
+// Create a new field for float value.
 func NewFloatField(name string, vs Validators, ws ...Widget) *FloatField {
 	self := new(FloatField)
 	self.name = name

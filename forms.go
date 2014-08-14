@@ -3,6 +3,7 @@ package gforms
 import (
 	"bytes"
 	"fmt"
+	"mime/multipart"
 	"net/http"
 	"reflect"
 )
@@ -211,7 +212,6 @@ func (self *FormInstance) IsValid() bool {
 }
 
 func (self *FormInstance) parseRequest(req *http.Request) error {
-	req.ParseForm()
 	data, rawData, err := parseReuqestBody(req)
 	if err != nil {
 		return err
@@ -277,6 +277,12 @@ func (self *FormInstance) MapTo(model interface{}) {
 				value, ok := v.([]string)
 				if !ok {
 					value = []string{}
+				}
+				valueField.Set(reflect.ValueOf(value))
+			case reflect.Struct: // file
+				value, ok := v.(multipart.FileHeader)
+				if !ok {
+					value = multipart.FileHeader{}
 				}
 				valueField.Set(reflect.ValueOf(value))
 			}

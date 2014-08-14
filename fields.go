@@ -36,7 +36,7 @@ func (self *BaseField) GetWigdet() Widget {
 func (self *BaseField) Clean(data Data) (*V, error) {
 	m, hasField := data[self.GetName()]
 	if hasField {
-		v := m.RawValues[0]
+		v := m.rawValueAsString()
 		m.Kind = reflect.String
 		if v != "" {
 			m.Value = v

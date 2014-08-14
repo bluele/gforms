@@ -53,7 +53,7 @@ func (self *CheckboxWidget) Clean(name string, data Data) (*V, error) {
 	m, hasField := data[name]
 	if hasField {
 		m.Kind = reflect.Slice
-		m.Value = m.RawValues
+		m.Value = m.rawValueAsStringArray()
 		m.IsNil = false
 		return m, nil
 	}

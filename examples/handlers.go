@@ -37,6 +37,7 @@ func main() {
 	http.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
 		form := userForm(r)
 		if r.Method != "POST" {
+			w.Header().Set("Content-Type", "text/html")
 			fmt.Fprintf(w, form.Html())
 			return
 		}

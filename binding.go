@@ -17,6 +17,8 @@ func parseReuqestBody(req *http.Request) (*Data, *RawData, error) {
 	if req.Method == "POST" || req.Method == "PUT" || contentType != "" {
 		if strings.Contains(contentType, "json") {
 			return bindJson(req)
+		} else if strings.Contains(contentType, "multipart/form-data") {
+			return bindMultiPartForm(req)
 		} else {
 			return bindForm(req)
 		}
@@ -67,12 +69,30 @@ func bindJson(req *http.Request) (*Data, *RawData, error) {
 }
 
 func bindForm(req *http.Request) (*Data, *RawData, error) {
+	req.ParseForm()
 	data := make(Data)
 	rawData := make(RawData)
 	for name, v := range req.Form {
 		if len(v) != 0 {
 			data[name] = newV(v, reflect.String)
 			rawData[name] = v[0]
+		}
+	}
+	return &data, &rawData, nil
+}
+
+func bindMultiPartForm(req *http.Request) (*Data, *RawData, error) {
+	req.ParseMultipartForm(32 << 20)
+	data := make(Data)
+	rawData := make(RawData)
+	for name, v := range req.MultipartForm.Value {
+		if len(v) != 0 {
+			data[name] = newV(v, reflect.String)
+		}
+	}
+	for name, v := range req.MultipartForm.File {
+		if len(v) != 0 {
+			data[name] = newV(v, reflect.Array)
 		}
 	}
 	return &data, &rawData, nil

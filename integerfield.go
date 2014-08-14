@@ -18,6 +18,7 @@ func (self *IntegerField) html(vs ...string) string {
 	return renderTemplate("TextTypeField", newTemplateContext(self, vs...))
 }
 
+// Create a new field for integer value.
 func NewIntegerField(name string, vs Validators, ws ...Widget) *IntegerField {
 	self := new(IntegerField)
 	self.name = name
@@ -31,7 +32,7 @@ func NewIntegerField(name string, vs Validators, ws ...Widget) *IntegerField {
 func (self *IntegerField) Clean(data Data) (*V, error) {
 	m, hasField := data[self.GetName()]
 	if hasField {
-		v := m.RawValues[0]
+		v := m.rawValueAsString()
 		m.Kind = reflect.Int
 		if v != "" {
 			iv, err := strconv.Atoi(v)
