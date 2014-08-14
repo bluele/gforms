@@ -23,8 +23,8 @@ func (self *FloatField) Clean(data Data) (*V, error) {
 	if hasField {
 		v := m.rawValueAsString()
 		m.Kind = reflect.Float64
-		if v != "" {
-			fv, err := strconv.ParseFloat(v, 64)
+		if v != nil && (*v) != "" {
+			fv, err := strconv.ParseFloat(*v, 64)
 			if err == nil {
 				m.Value = fv
 				m.IsNil = false

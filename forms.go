@@ -196,9 +196,7 @@ func (self *FormInstance) IsValid() bool {
 			isValid = false
 			continue
 		}
-		if cleanedValue.IsNil {
-			cleanedData[name] = nil
-		} else {
+		if !cleanedValue.IsNil {
 			cleanedData[name] = cleanedValue.Value
 		}
 	}

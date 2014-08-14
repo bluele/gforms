@@ -18,12 +18,12 @@ type V struct {
 	Kind reflect.Kind
 }
 
-func (self *V) rawValueAsString() string {
+func (self *V) rawValueAsString() *string {
 	v, ok := self.RawValue.([]string)
 	if ok {
-		return v[0]
+		return &v[0]
 	} else {
-		return ""
+		return nil
 	}
 }
 

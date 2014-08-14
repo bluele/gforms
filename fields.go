@@ -38,8 +38,8 @@ func (self *BaseField) Clean(data Data) (*V, error) {
 	if hasField {
 		v := m.rawValueAsString()
 		m.Kind = reflect.String
-		if v != "" {
-			m.Value = v
+		if v != nil {
+			m.Value = *v
 			m.IsNil = false
 			return m, nil
 		}

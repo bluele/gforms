@@ -44,7 +44,7 @@ func bindJson(req *http.Request) (*Data, *RawData, error) {
 	for k, v := range jsonBody {
 		switch c := v[0]; c {
 		case 'n':
-			data[k] = newV([]string{""}, reflect.String)
+			data[k] = nilV()
 			rawData[k] = string(v)
 		case 't', 'f':
 			if c == 't' {

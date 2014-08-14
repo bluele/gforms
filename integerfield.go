@@ -34,8 +34,8 @@ func (self *IntegerField) Clean(data Data) (*V, error) {
 	if hasField {
 		v := m.rawValueAsString()
 		m.Kind = reflect.Int
-		if v != "" {
-			iv, err := strconv.Atoi(v)
+		if v != nil && (*v) != "" {
+			iv, err := strconv.Atoi(*v)
 			if err == nil {
 				m.Value = iv
 				m.IsNil = false
