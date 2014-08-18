@@ -268,7 +268,12 @@ func (self *FormInstance) MapTo(model interface{}) {
 			case reflect.String:
 				value, ok := v.(string)
 				if !ok {
-					value = ""
+					va, ok := v.([]string)
+					if ok && len(va) > 0 {
+						value = va[0]
+					} else {
+						value = ""
+					}
 				}
 				valueField.SetString(value)
 			case reflect.Slice:
