@@ -94,6 +94,9 @@ func newTemplateContext(field Field, vs ...string) templateContext {
 
 func renderTemplate(name string, ctx interface{}) string {
 	var buffer bytes.Buffer
-	Template.ExecuteTemplate(&buffer, name, ctx)
+	err := Template.ExecuteTemplate(&buffer, name, ctx)
+	if err != nil {
+		panic(err)
+	}
 	return buffer.String()
 }
