@@ -12,6 +12,7 @@ type TextWidget struct {
 type parameter struct {
 	Name  string
 	Attrs map[string]string
+	Value []string
 }
 
 func (self *TextWidget) html(field Field, vs ...string) string {
@@ -19,6 +20,7 @@ func (self *TextWidget) html(field Field, vs ...string) string {
 	Template.ExecuteTemplate(&buffer, "TextWidget", parameter{
 		Attrs: self.Attrs,
 		Name:  field.GetName(),
+		Value: vs,
 	})
 	return buffer.String()
 }
