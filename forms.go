@@ -8,6 +8,7 @@ import (
 	"reflect"
 )
 
+// Form fields
 type Fields struct {
 	fields    []Field
 	fieldsMap map[string]Field
@@ -55,7 +56,6 @@ type FormInstance struct {
 	RawData     RawData
 	CleanedData CleanedData
 	Errors      Errors
-	request     *http.Request
 }
 
 type FieldContext struct {
@@ -138,23 +138,35 @@ func newModelFormInstance(model interface{}, fields *Fields) ModelFormInstance {
 
 type Form func(*http.Request) *FormInstance
 
+// Initialize with http request.
+func (f Form) FromRequest(r *http.Request) *FormInstance {
+	return f(r)
+}
+
+// Intialize with map object.
+func (f Form) FromMap(m map[string][]string) *FormInstance {
+	fi := f(nil)
+	fi.parseMap(m)
+	return fi
+}
+
 type ModelForm func(*http.Request) *ModelFormInstance
 
+// Define new form with specified fields.
 func DefineForm(fields *Fields) Form {
 	return func(r *http.Request) *FormInstance {
 		f := FormInstance{
 			Fields: fields,
 		}
-		f.request = r
 		f.parseRequest(r)
 		return &f
 	}
 }
 
+// Define new form with generating fields from model's attributes and specified fields.
 func DefineModelForm(model interface{}, fields *Fields) ModelForm {
 	return func(r *http.Request) *ModelFormInstance {
 		f := newModelFormInstance(model, fields)
-		f.request = r
 		f.parseRequest(r)
 		return &f
 	}
@@ -164,6 +176,7 @@ type Cleaner interface {
 	Clean(string, Data) (*V, error)
 }
 
+// Check validation for forminstance data.
 func (self *FormInstance) IsValid() bool {
 	isValid := true
 	cleanedData := CleanedData{}
@@ -211,6 +224,19 @@ func (self *FormInstance) IsValid() bool {
 
 func (self *FormInstance) parseRequest(req *http.Request) error {
 	data, rawData, err := parseReuqestBody(req)
+	if err != nil {
+		return err
+	}
+	if data == nil || rawData == nil {
+		return nil
+	}
+	self.Data = *data
+	self.RawData = *rawData
+	return nil
+}
+
+func (self *FormInstance) parseMap(m map[string][]string) error {
+	data, rawData, err := bindMap(m)
 	if err != nil {
 		return err
 	}

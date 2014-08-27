@@ -2,6 +2,7 @@ package gforms
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -13,6 +14,9 @@ import (
 )
 
 func parseReuqestBody(req *http.Request) (*Data, *RawData, error) {
+	if isNilValue(req) {
+		return nil, nil, errors.New("*http.Request is nil.")
+	}
 	contentType := req.Header.Get("Content-Type")
 	if req.Method == "POST" || req.Method == "PUT" || contentType != "" {
 		if strings.Contains(contentType, "json") {
@@ -93,6 +97,18 @@ func bindMultiPartForm(req *http.Request) (*Data, *RawData, error) {
 	for name, v := range req.MultipartForm.File {
 		if len(v) != 0 {
 			data[name] = newV(v, reflect.Array)
+		}
+	}
+	return &data, &rawData, nil
+}
+
+func bindMap(m map[string][]string) (*Data, *RawData, error) {
+	data := make(Data)
+	rawData := make(RawData)
+	for name, v := range m {
+		if len(v) != 0 {
+			data[name] = newV(v, reflect.String)
+			rawData[name] = v[0]
 		}
 	}
 	return &data, &rawData, nil

@@ -49,5 +49,21 @@ func main() {
 			fmt.Fprintf(w, "%v", form.Errors)
 		}
 	})
+
+	http.HandleFunc("/map", func(w http.ResponseWriter, r *http.Request) {
+		form := userForm.FromMap(map[string][]string{
+			"name":  {"bluele"},
+			"email": {"junkxdev@gmail.com"},
+		})
+		if form.IsValid() { // Validate request body
+			user := User{}
+			form.MapTo(&user)
+			fmt.Println(form.CleanedData)
+			fmt.Fprintf(w, "%v", user)
+		} else {
+			fmt.Fprintf(w, "%v", form.Errors)
+		}
+	})
+
 	http.ListenAndServe(":9000", nil)
 }
