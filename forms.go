@@ -26,6 +26,10 @@ func (self *Fields) GetMap() map[string]Field {
 	return self.fieldsMap
 }
 
+func (self *Fields) GetOrderedFields() []Field {
+        return self.fields
+}
+
 func (self *Fields) AddField(field Field) bool {
 	name := field.GetName()
 	_, exists := self.NamedBy(name)
