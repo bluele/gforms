@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"reflect"
 )
 
-// Form fields
+// Form fields list.
 type Fields struct {
 	fields    []Field
 	fieldsMap map[string]Field
@@ -48,6 +49,7 @@ func NewFields(fields ...Field) *Fields {
 	return &fs
 }
 
+// cleaned data for all fields.
 type CleanedData map[string]interface{}
 
 type FormInstance struct {
@@ -136,7 +138,7 @@ func newModelFormInstance(model interface{}, fields *Fields) ModelFormInstance {
 	return inst
 }
 
-type Form func(*http.Request) *FormInstance
+type Form func(...*http.Request) *FormInstance
 
 // Initialize with http request.
 func (f Form) FromRequest(r *http.Request) *FormInstance {
@@ -144,30 +146,46 @@ func (f Form) FromRequest(r *http.Request) *FormInstance {
 }
 
 // Intialize with map object.
-func (f Form) FromMap(m map[string][]string) *FormInstance {
-	fi := f(nil)
-	fi.parseMap(m)
+func (f Form) FromValues(v url.Values) *FormInstance {
+	fi := f()
+	fi.parseValues(v)
 	return fi
 }
 
-type ModelForm func(*http.Request) *ModelFormInstance
+type ModelForm func(...*http.Request) *ModelFormInstance
+
+// Initialize with http request.
+func (f ModelForm) FromRequest(r *http.Request) *ModelFormInstance {
+	return f(r)
+}
+
+// Intialize with map object.
+func (f ModelForm) FromValues(v url.Values) *ModelFormInstance {
+	fi := f(nil)
+	fi.parseValues(v)
+	return fi
+}
 
 // Define new form with specified fields.
 func DefineForm(fields *Fields) Form {
-	return func(r *http.Request) *FormInstance {
+	return func(r ...*http.Request) *FormInstance {
 		f := FormInstance{
 			Fields: fields,
 		}
-		f.parseRequest(r)
+		if len(r) > 0 {
+			f.parseRequest(r[0])
+		}
 		return &f
 	}
 }
 
 // Define new form with generating fields from model's attributes and specified fields.
 func DefineModelForm(model interface{}, fields *Fields) ModelForm {
-	return func(r *http.Request) *ModelFormInstance {
+	return func(r ...*http.Request) *ModelFormInstance {
 		f := newModelFormInstance(model, fields)
-		f.parseRequest(r)
+		if len(r) > 0 {
+			f.parseRequest(r[0])
+		}
 		return &f
 	}
 }
@@ -235,8 +253,8 @@ func (self *FormInstance) parseRequest(req *http.Request) error {
 	return nil
 }
 
-func (self *FormInstance) parseMap(m map[string][]string) error {
-	data, rawData, err := bindMap(m)
+func (self *FormInstance) parseValues(v url.Values) error {
+	data, rawData, err := bindValues(v)
 	if err != nil {
 		return err
 	}

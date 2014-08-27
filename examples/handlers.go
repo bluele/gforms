@@ -51,14 +51,14 @@ func main() {
 	})
 
 	http.HandleFunc("/map", func(w http.ResponseWriter, r *http.Request) {
-		form := userForm.FromMap(map[string][]string{
-			"name":  {"bluele"},
-			"email": {"junkxdev@gmail.com"},
+		form := userForm.FromValues(map[string][]string{
+			"name":   {"bluele"},
+			"email":  {"junkxdev@gmail.com"},
+			"weight": {"71.9"},
 		})
 		if form.IsValid() { // Validate request body
 			user := User{}
 			form.MapTo(&user)
-			fmt.Println(form.CleanedData)
 			fmt.Fprintf(w, "%v", user)
 		} else {
 			fmt.Fprintf(w, "%v", form.Errors)

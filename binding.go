@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
@@ -74,8 +75,8 @@ func bindJson(req *http.Request) (*Data, *RawData, error) {
 
 func bindForm(req *http.Request) (*Data, *RawData, error) {
 	req.ParseForm()
-	data := make(Data)
-	rawData := make(RawData)
+	data := Data{}
+	rawData := RawData{}
 	for name, v := range req.Form {
 		if len(v) != 0 {
 			data[name] = newV(v, reflect.String)
@@ -87,8 +88,8 @@ func bindForm(req *http.Request) (*Data, *RawData, error) {
 
 func bindMultiPartForm(req *http.Request) (*Data, *RawData, error) {
 	req.ParseMultipartForm(32 << 20)
-	data := make(Data)
-	rawData := make(RawData)
+	data := Data{}
+	rawData := RawData{}
 	for name, v := range req.MultipartForm.Value {
 		if len(v) != 0 {
 			data[name] = newV(v, reflect.String)
@@ -102,10 +103,10 @@ func bindMultiPartForm(req *http.Request) (*Data, *RawData, error) {
 	return &data, &rawData, nil
 }
 
-func bindMap(m map[string][]string) (*Data, *RawData, error) {
-	data := make(Data)
-	rawData := make(RawData)
-	for name, v := range m {
+func bindValues(uv url.Values) (*Data, *RawData, error) {
+	data := Data{}
+	rawData := RawData{}
+	for name, v := range uv {
 		if len(v) != 0 {
 			data[name] = newV(v, reflect.String)
 			rawData[name] = v[0]
