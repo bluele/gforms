@@ -28,8 +28,8 @@ func (self *Fields) GetMap() map[string]Field {
 	return self.fieldsMap
 }
 
-func (self *Fields) GetOrderedFields() []Field {
-        return self.fields
+func (self *Fields) GetList() []Field {
+	return self.fields
 }
 
 func (self *Fields) AddField(field Field) bool {
