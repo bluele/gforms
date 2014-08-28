@@ -11,14 +11,20 @@ type TextWidget struct {
 
 type parameter struct {
 	Name  string
+	Value string
 	Attrs map[string]string
 }
 
 func (self *TextWidget) html(field Field, vs ...string) string {
 	var buffer bytes.Buffer
+	var v string
+	if len(vs) > 0 {
+		v = vs[0]
+	}
 	Template.ExecuteTemplate(&buffer, "TextWidget", parameter{
 		Attrs: self.Attrs,
 		Name:  field.GetName(),
+		Value: v,
 	})
 	return buffer.String()
 }

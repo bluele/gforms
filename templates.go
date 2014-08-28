@@ -7,7 +7,7 @@ import (
 const defaultTemplates = `
 {{define "TextTypeField"}}<input type="text" name="{{.Field.GetName}}" value="{{.Value | html}}"></input>{{end}}
 
-{{define "TextWidget"}}<input type="text" name="{{.Name}}" value=""{{range $attr, $val := .Attrs}} {{$attr}}="{{$val}}"{{end}}></input>{{end}}
+{{define "TextWidget"}}<input type="text" name="{{.Name}}" value="{{.Value | html}}"{{range $attr, $val := .Attrs}} {{$attr}}="{{$val}}"{{end}}></input>{{end}}
 
 {{define "SelectWidget"}}<select name="{{.Name}}"{{range $attr, $val := .Attrs}}{{$attr}}="{{$val}}"{{end}}>
 {{range $idx, $val := .Options}}<option value="{{$val.Value | html}}"{{if $val.Selected }} selected{{end}}{{if $val.Disabled}} disabled{{end}}>{{$val.Label}}</option>
