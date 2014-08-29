@@ -1,6 +1,8 @@
 # GForms
 A flexible forms validation and rendering library for golang web development. (under heavy development)
 
+[![wercker status](https://app.wercker.com/status/51a7f6720baf8e67a28241790380d19b/s "wercker status")](https://app.wercker.com/project/bykey/51a7f6720baf8e67a28241790380d19b)
+
 ## Overview
 
 * Validate HTTP request
