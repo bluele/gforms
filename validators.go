@@ -102,7 +102,7 @@ type regexpValidator struct {
 }
 
 func (self regexpValidator) Validate(value *V, cleanedData CleanedData) error {
-	if value.IsNil || value.Kind != reflect.String {
+	if value.IsNil || value.Kind != reflect.String || value.Value == "" {
 		return nil
 	}
 	s := value.Value.(string)
