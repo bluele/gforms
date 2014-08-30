@@ -319,6 +319,26 @@ gforms.Validators{
 },
 ```
 
+### MinValueValidator
+
+Added an error msg to FormInstance.Errors if value is less than specified first argument.
+
+```go
+gforms.Validators{
+  gforms.MinValueValidator(16),
+},
+```
+
+### MaxValueValidator
+
+Added an error msg to FormInstance.Errors if value is greater than specified first argument.
+
+```go
+gforms.Validators{
+  gforms.MaxValueValidator(256),
+},
+```
+
 ## Support Widgets
 
 ### SelectWidget
