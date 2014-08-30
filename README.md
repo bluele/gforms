@@ -108,7 +108,7 @@ type User struct {
 }
 
 func initForm() {
-  userForm := gforms.DefineModelForm(
+  userForm := gforms.DefineModelForm(gforms.NewFields(
     User{},
     // override User.name field
     gforms.NewTextField(
@@ -118,7 +118,7 @@ func initForm() {
         gforms.MaxLengthValidator(32),
       },
     ),
-  )
+  ))
 }
 ```
 
@@ -133,7 +133,7 @@ type User struct {
 }
 
 func main() {
-  userForm := gforms.DefineModelForm(
+  userForm := gforms.DefineModelForm(gforms.NewFields(
     User{},
     // override User.name field
     gforms.NewTextField(
@@ -143,7 +143,7 @@ func main() {
         gforms.MaxLengthValidator(32),
       },
     ),
-  )
+  ))
 
   http.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
     form := userForm(r)
