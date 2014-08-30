@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"github.com/bluele/gforms"
 	"net/http"
+	"path"
+	"runtime"
+	"text/template"
 )
 
 type User struct {
@@ -12,7 +15,8 @@ type User struct {
 }
 
 func main() {
-	userForm := gforms.DefineForm(gforms.NewFields(
+	tpl := template.Must(template.ParseFiles(path.Join(getTemplatePath(), "login_form.html")))
+	loginForm := gforms.DefineForm(gforms.NewFields(
 		gforms.NewTextField(
 			"name",
 			gforms.Validators{
@@ -22,44 +26,38 @@ func main() {
 		gforms.NewTextField(
 			"password",
 			gforms.Validators{
+				gforms.Required(),
 				gforms.MinLengthValidator(4),
 				gforms.MaxLengthValidator(16),
 			},
 			gforms.NewPasswordWidget(map[string]string{}),
 		),
 	))
-
-	http.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
-		form := userForm(r)
+		form := loginForm(r)
 		if r.Method != "POST" {
-			html := `<form method="post">`
-			for _, f := range form.Fields.GetList() {
-				html += fmt.Sprintf(`<label>%v</label>`, f.GetName())
-				html += f.Html() + "<br />"
+			err := tpl.Execute(w, form)
+			if err != nil {
+				panic(err)
 			}
-			html += `<input type="submit"></form>`
-			fmt.Fprintf(w, html)
 			return
 		}
-		if form.IsValid() { // Validate request body
-			user := User{}
-			form.MapTo(&user)
-			fmt.Fprintf(w, "%v", user)
-		} else {
-			html := `<form method="post">`
-			for _, f := range form.Fields.GetList() {
-				name := f.GetName()
-				err, hasErr := form.Errors[name]
-				if hasErr {
-					html += fmt.Sprintf("<label>%v</label><div class=\"error\">%v</div>%v<br />", name, err, f.Html(form.RawData))
-				} else {
-					html += fmt.Sprintf("<label>%v</label>%v<br />", name, f.Html(form.RawData))
-				}
+		if !form.IsValid() {
+			err := tpl.Execute(w, form)
+			if err != nil {
+				panic(err)
 			}
-			html += `<input type="submit"></form>`
-			fmt.Fprintf(w, html)
+			return
 		}
+		user := User{}
+		form.MapTo(&user)
+		fmt.Fprintf(w, "%v", user)
 	})
 	http.ListenAndServe(":9000", nil)
+}
+
+func getTemplatePath() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Join(path.Dir(filename), "templates")
 }
