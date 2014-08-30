@@ -20,7 +20,7 @@ type required struct {
 }
 
 func (self required) Validate(value *V, cleanedData CleanedData) error {
-	if value.IsNil {
+	if value.IsNil || (value.Kind == reflect.String && value.Value == "") {
 		return errors.New(self.Message)
 	}
 	return nil
@@ -56,7 +56,7 @@ func MaxLengthValidator(length int, message ...string) maxLengthValidator {
 }
 
 func (self maxLengthValidator) Validate(value *V, cleanedData CleanedData) error {
-	if value.IsNil || value.Kind != reflect.String {
+	if value.IsNil || value.Kind != reflect.String || value.Value == "" {
 		return nil
 	}
 	s := value.Value.(string)
@@ -85,7 +85,7 @@ func MinLengthValidator(length int, message ...string) minLengthValidator {
 }
 
 func (self minLengthValidator) Validate(value *V, cleanedData CleanedData) error {
-	if value.IsNil || value.Kind != reflect.String {
+	if value.IsNil || value.Kind != reflect.String || value.Value == "" {
 		return nil
 	}
 	s := value.Value.(string)

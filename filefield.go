@@ -8,8 +8,8 @@ type FileField struct {
 	BaseField
 }
 
-func (self *FileField) Html(rd RawData) string {
-	return fieldToHtml(self, rd)
+func (self *FileField) Html(rds ...RawData) string {
+	return fieldToHtml(self, rds...)
 }
 
 func (self *FileField) html(vs ...string) string {

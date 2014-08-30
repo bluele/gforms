@@ -10,8 +10,8 @@ type IntegerField struct {
 	BaseField
 }
 
-func (self *IntegerField) Html(rd RawData) string {
-	return fieldToHtml(self, rd)
+func (self *IntegerField) Html(rds ...RawData) string {
+	return fieldToHtml(self, rds...)
 }
 
 func (self *IntegerField) html(vs ...string) string {

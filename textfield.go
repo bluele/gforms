@@ -4,8 +4,8 @@ type TextField struct {
 	BaseField
 }
 
-func (self *TextField) Html(rd RawData) string {
-	return fieldToHtml(self, rd)
+func (self *TextField) Html(rds ...RawData) string {
+	return fieldToHtml(self, rds...)
 }
 
 func (self *TextField) html(vs ...string) string {

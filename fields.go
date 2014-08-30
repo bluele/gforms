@@ -8,7 +8,7 @@ import (
 type Field interface {
 	Clean(Data) (*V, error)
 	Validate(*V, CleanedData) error
-	Html(RawData) string
+	Html(...RawData) string
 	html(...string) string
 	GetName() string
 	GetWigdet() Widget
@@ -60,7 +60,15 @@ func (self *BaseField) Validate(value *V, cleanedData CleanedData) error {
 	return nil
 }
 
-func fieldToHtml(field Field, rd RawData) string {
+func fieldToHtml(field Field, rds ...RawData) string {
+	if len(rds) == 0 {
+		if field.GetWigdet() == nil {
+			return field.html()
+		} else {
+			return field.GetWigdet().html(field)
+		}
+	}
+	rd := rds[0]
 	v, hasField := rd[field.GetName()]
 	if field.GetWigdet() == nil {
 		if hasField {
