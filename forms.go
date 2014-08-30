@@ -24,10 +24,12 @@ func (self *Fields) NamedBy(name string) (Field, bool) {
 	return v, ok
 }
 
+// Key-Value maps for field name and field object.
 func (self *Fields) GetMap() map[string]Field {
 	return self.fieldsMap
 }
 
+// Get ordered list for field object.
 func (self *Fields) GetList() []Field {
 	return self.fields
 }
@@ -158,19 +160,19 @@ func (f Form) FromValues(v url.Values) *FormInstance {
 
 type ModelForm func(...*http.Request) *ModelFormInstance
 
-// Initialize with http request.
+// Initialize form data with http request.
 func (f ModelForm) FromRequest(r *http.Request) *ModelFormInstance {
 	return f(r)
 }
 
-// Intialize with map object.
+// Intialize form data with map object.
 func (f ModelForm) FromValues(v url.Values) *ModelFormInstance {
 	fi := f(nil)
 	fi.parseValues(v)
 	return fi
 }
 
-// Define new form with specified fields.
+// Define a new form object with specified fields.
 func DefineForm(fields *Fields) Form {
 	return func(r ...*http.Request) *FormInstance {
 		f := FormInstance{
@@ -183,7 +185,7 @@ func DefineForm(fields *Fields) Form {
 	}
 }
 
-// Define new form with generating fields from model's attributes and specified fields.
+// Define a new form with generating fields from model's attributes and specified fields.
 func DefineModelForm(model interface{}, fields *Fields) ModelForm {
 	return func(r ...*http.Request) *ModelFormInstance {
 		f := newModelFormInstance(model, fields)
