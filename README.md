@@ -275,7 +275,7 @@ Added an error msg to FormInstance.Errors if the regexp doesn't matched a value.
 
 ```go
 gforms.Validators{
-  gforms.RegexpValidator("number-\d+"),
+  gforms.RegexpValidator(`number-\d+`),
 },
 ```
 

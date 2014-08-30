@@ -101,7 +101,7 @@ func TestRegexpValidator(t *testing.T) {
 		NewTextField(
 			"id",
 			Validators{
-				RegexpValidator("^\\d+$"),
+				RegexpValidator(`^\d+$`),
 			},
 		),
 	))
