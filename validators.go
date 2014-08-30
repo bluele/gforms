@@ -95,6 +95,62 @@ func (self minLengthValidator) Validate(value *V, cleanedData CleanedData) error
 	return nil
 }
 
+type maxValueValidator struct {
+	Value   int
+	Message string
+	Validator
+}
+
+func MaxValueValidator(value int, message ...string) maxValueValidator {
+	self := maxValueValidator{}
+	self.Value = value
+	if len(message) > 0 {
+		self.Message = message[0]
+	} else {
+		self.Message = fmt.Sprintf("Ensure this value is less than or equal to %v.", self.Value)
+	}
+	return self
+}
+
+func (self maxValueValidator) Validate(value *V, cleanedData CleanedData) error {
+	if value.IsNil || value.Kind != reflect.Int {
+		return nil
+	}
+	v := value.Value.(int)
+	if v > self.Value {
+		return errors.New(self.Message)
+	}
+	return nil
+}
+
+type minValueValidator struct {
+	Value   int
+	Message string
+	Validator
+}
+
+func MinValueValidator(value int, message ...string) minValueValidator {
+	self := minValueValidator{}
+	self.Value = value
+	if len(message) > 0 {
+		self.Message = message[0]
+	} else {
+		self.Message = fmt.Sprintf("Ensure this value is greater than or equal to %v.", self.Value)
+	}
+	return self
+}
+
+func (self minValueValidator) Validate(value *V, cleanedData CleanedData) error {
+	if value.IsNil || value.Kind != reflect.Int {
+		return nil
+	}
+	v := value.Value.(int)
+	if v < self.Value {
+		return errors.New(self.Message)
+	}
+	return nil
+}
+
 type regexpValidator struct {
 	re      *regexp.Regexp
 	Message string
