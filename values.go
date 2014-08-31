@@ -44,6 +44,15 @@ func (self *V) rawValueAsFileHeader() multipart.FileHeader {
 	return multipart.FileHeader{}
 }
 
+func (self *V) rawValueAsBool() bool {
+	v, ok := self.RawValue.(bool)
+	if ok {
+		return v
+	} else {
+		return false
+	}
+}
+
 func newV(value interface{}, kind reflect.Kind) *V {
 	v := new(V)
 	v.RawValue = value

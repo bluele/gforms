@@ -338,6 +338,12 @@ func (self *FormInstance) MapTo(model interface{}) {
 					value = multipart.FileHeader{}
 				}
 				valueField.Set(reflect.ValueOf(value))
+			case reflect.Bool:
+				value, ok := v.(bool)
+				if !ok {
+					value = false
+				}
+				valueField.SetBool(value)
 			}
 		}
 	}

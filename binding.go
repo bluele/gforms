@@ -53,9 +53,9 @@ func bindJson(req *http.Request) (*Data, *RawData, error) {
 			rawData[k] = string(v)
 		case 't', 'f':
 			if c == 't' {
-				data[k] = newV([]string{"true"}, reflect.String)
+				data[k] = newV(true, reflect.Bool)
 			} else {
-				data[k] = newV([]string{"false"}, reflect.String)
+				data[k] = newV(false, reflect.Bool)
 			}
 			rawData[k] = string(v)
 		case '"':

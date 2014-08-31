@@ -19,6 +19,8 @@ const defaultTemplates = `
 {{define "CheckboxWidget"}}{{ $name := .Name}}{{range $idx, $val := .Options}}<input type="checkbox" name="{{$name | html}}" value="{{$val.Value | html}}"{{if $val.Checked}} checked{{end}}{{if $val.Disabled}} disabled{{end}}>{{$val.Label | html}}
 {{end}}{{end}}
 
+{{define "BooleanTypeField"}}<input type="checkbox" name="{{.Name | html}}">{{end}}
+
 {{define "FileTypeField"}}<input type="file" name="{{.Field.GetName | html}}"></input>{{end}}
 `
 
