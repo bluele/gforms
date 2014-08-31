@@ -108,8 +108,7 @@ type User struct {
 }
 
 func initForm() {
-  userForm := gforms.DefineModelForm(gforms.NewFields(
-    User{},
+  userForm := gforms.DefineModelForm(User{}, gforms.NewFields(
     // override User.name field
     gforms.NewTextField(
       "name",
@@ -133,8 +132,7 @@ type User struct {
 }
 
 func main() {
-  userForm := gforms.DefineModelForm(gforms.NewFields(
-    User{},
+  userForm := gforms.DefineModelForm(User{}, gforms.NewFields(
     // override User.name field
     gforms.NewTextField(
       "name",
