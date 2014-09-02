@@ -228,42 +228,46 @@ userForm := gforms.DefineForm(gforms.NewFields(
 
 ### IntegerField
 
+It maps value to FormInstance.CleanedData as type `int`.
+
 ```go
-form := gforms.DefineForm(gforms.NewFields(
-  gforms.NewIntegerField(
-    "name",
-    gforms.Validators{},
-))
+gforms.NewIntegerField(
+  "name",
+  gforms.Validators{},
+)
 ```
 
 ### FloatField
 
+It maps value to FormInstance.CleanedData as type `float32` or `float64`.
+
 ```go
-form := gforms.DefineForm(gforms.NewFields(
-  gforms.NewFloatField(
-    "name",
-    gforms.Validators{},
-))
+gforms.NewFloatField(
+  "name",
+  gforms.Validators{},
+)
 ```
 
 ### TextField
 
+It maps value to FormInstance.CleanedData as type `string`.
+
 ```go
-form := gforms.DefineForm(gforms.NewFields(
-  gforms.NewTextField(
-    "name",
-    gforms.Validators{},
-))
+gforms.NewTextField(
+  "name",
+  gforms.Validators{},
+)
 ```
 
 ### MultipleTextField
 
+It maps value to FormInstance.CleanedData as type `[]string`.
+
 ```go
-form := gforms.DefineForm(gforms.NewFields(
-  gforms.NewMultipleTextField(
-    "names",
-    gforms.Validators{},
-))
+gforms.NewMultipleTextField(
+  "names",
+  gforms.Validators{},
+)
 ```
 
 ## Support Validators
