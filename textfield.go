@@ -1,24 +1,53 @@
 package gforms
 
+import (
+	"reflect"
+)
+
 type TextField struct {
 	BaseField
 }
 
-func (self *TextField) Html(rds ...RawData) string {
-	return fieldToHtml(self, rds...)
+func (f *TextField) New() FieldInterface {
+	fi := new(TextFieldInstance)
+	fi.Model = f
+	fi.V = nilV("")
+	return fi
 }
 
-func (self *TextField) html(vs ...string) string {
-	return renderTemplate("TextTypeField", newTemplateContext(self, vs...))
+type TextFieldInstance struct {
+	FieldInstance
 }
 
 // Create a new field for string value.
-func NewTextField(name string, vs Validators, ws ...Widget) *TextField {
-	self := new(TextField)
-	self.name = name
-	self.validators = vs
+func NewTextField(name string, vs Validators, ws ...Widget) Field {
+	f := new(TextField)
+	f.name = name
+	f.validators = vs
 	if len(ws) > 0 {
-		self.Widget = ws[0]
+		f.widget = ws[0]
 	}
-	return self
+	return f
+}
+
+func (f *TextFieldInstance) Clean(data Data) error {
+	m, hasField := data[f.Model.GetName()]
+	if hasField {
+		f.V = m
+		v := m.rawValueAsString()
+		m.Kind = reflect.String
+		if v != nil {
+			m.Value = *v
+			m.IsNil = false
+		}
+	}
+	return nil
+}
+
+func (f *TextFieldInstance) html() string {
+	return renderTemplate("TextTypeField", newTemplateContext(f))
+}
+
+func (f *TextFieldInstance) Html() string {
+	return fieldToHtml(f)
 }

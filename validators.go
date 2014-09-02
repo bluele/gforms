@@ -9,7 +9,7 @@ import (
 
 type Validator interface {
 	Name() string
-	Validate(*V, CleanedData) error
+	Validate(*FieldInstance, *FormInstance) error
 }
 
 type Validators []Validator
@@ -19,22 +19,23 @@ type required struct {
 	Validator
 }
 
-func (self required) Validate(value *V, cleanedData CleanedData) error {
-	if value.IsNil || (value.Kind == reflect.String && value.Value == "") {
-		return errors.New(self.Message)
-	}
-	return nil
-}
-
 // Returns error if the field is not provided.
 func Required(message ...string) required {
-	self := required{}
+	vl := required{}
 	if len(message) > 0 {
-		self.Message = message[0]
+		vl.Message = message[0]
 	} else {
-		self.Message = "This field is required"
+		vl.Message = "This field is required"
 	}
-	return self
+	return vl
+}
+
+func (vl required) Validate(fi *FieldInstance, fo *FormInstance) error {
+	v := fi.V
+	if v.IsNil || (v.Kind == reflect.String && v.Value == "") {
+		return errors.New(vl.Message)
+	}
+	return nil
 }
 
 type maxLengthValidator struct {
@@ -45,23 +46,24 @@ type maxLengthValidator struct {
 
 // Returns error if the length of value is greater than length argument.
 func MaxLengthValidator(length int, message ...string) maxLengthValidator {
-	self := maxLengthValidator{}
-	self.Length = length
+	vl := maxLengthValidator{}
+	vl.Length = length
 	if len(message) > 0 {
-		self.Message = message[0]
+		vl.Message = message[0]
 	} else {
-		self.Message = fmt.Sprintf("Ensure this value has at most %v characters.", self.Length)
+		vl.Message = fmt.Sprintf("Ensure this value has at most %v characters.", vl.Length)
 	}
-	return self
+	return vl
 }
 
-func (self maxLengthValidator) Validate(value *V, cleanedData CleanedData) error {
-	if value.IsNil || value.Kind != reflect.String || value.Value == "" {
+func (vl maxLengthValidator) Validate(fi *FieldInstance, fo *FormInstance) error {
+	v := fi.V
+	if v.IsNil || v.Kind != reflect.String || v.Value == "" {
 		return nil
 	}
-	s := value.Value.(string)
-	if len(s) > self.Length {
-		return errors.New(self.Message)
+	s := v.Value.(string)
+	if len(s) > vl.Length {
+		return errors.New(vl.Message)
 	}
 	return nil
 }
@@ -74,23 +76,24 @@ type minLengthValidator struct {
 
 // Returns error if the length of value is less than length argument.
 func MinLengthValidator(length int, message ...string) minLengthValidator {
-	self := minLengthValidator{}
-	self.Length = length
+	vl := minLengthValidator{}
+	vl.Length = length
 	if len(message) > 0 {
-		self.Message = message[0]
+		vl.Message = message[0]
 	} else {
-		self.Message = fmt.Sprintf("Ensure this value has at least %v characters", self.Length)
+		vl.Message = fmt.Sprintf("Ensure this value has at least %v characters", vl.Length)
 	}
-	return self
+	return vl
 }
 
-func (self minLengthValidator) Validate(value *V, cleanedData CleanedData) error {
-	if value.IsNil || value.Kind != reflect.String || value.Value == "" {
+func (vl minLengthValidator) Validate(fi *FieldInstance, fo *FormInstance) error {
+	v := fi.V
+	if v.IsNil || v.Kind != reflect.String || v.Value == "" {
 		return nil
 	}
-	s := value.Value.(string)
-	if len(s) < self.Length {
-		return errors.New(self.Message)
+	s := v.Value.(string)
+	if len(s) < vl.Length {
+		return errors.New(vl.Message)
 	}
 	return nil
 }
@@ -102,23 +105,24 @@ type maxValueValidator struct {
 }
 
 func MaxValueValidator(value int, message ...string) maxValueValidator {
-	self := maxValueValidator{}
-	self.Value = value
+	vl := maxValueValidator{}
+	vl.Value = value
 	if len(message) > 0 {
-		self.Message = message[0]
+		vl.Message = message[0]
 	} else {
-		self.Message = fmt.Sprintf("Ensure this value is less than or equal to %v.", self.Value)
+		vl.Message = fmt.Sprintf("Ensure this value is less than or equal to %v.", vl.Value)
 	}
-	return self
+	return vl
 }
 
-func (self maxValueValidator) Validate(value *V, cleanedData CleanedData) error {
-	if value.IsNil || value.Kind != reflect.Int {
+func (vl maxValueValidator) Validate(fi *FieldInstance, fo *FormInstance) error {
+	v := fi.V
+	if v.IsNil || v.Kind != reflect.Int {
 		return nil
 	}
-	v := value.Value.(int)
-	if v > self.Value {
-		return errors.New(self.Message)
+	iv := v.Value.(int)
+	if iv > vl.Value {
+		return errors.New(vl.Message)
 	}
 	return nil
 }
@@ -130,23 +134,24 @@ type minValueValidator struct {
 }
 
 func MinValueValidator(value int, message ...string) minValueValidator {
-	self := minValueValidator{}
-	self.Value = value
+	vl := minValueValidator{}
+	vl.Value = value
 	if len(message) > 0 {
-		self.Message = message[0]
+		vl.Message = message[0]
 	} else {
-		self.Message = fmt.Sprintf("Ensure this value is greater than or equal to %v.", self.Value)
+		vl.Message = fmt.Sprintf("Ensure this value is greater than or equal to %v.", vl.Value)
 	}
-	return self
+	return vl
 }
 
-func (self minValueValidator) Validate(value *V, cleanedData CleanedData) error {
-	if value.IsNil || value.Kind != reflect.Int {
+func (vl minValueValidator) Validate(fi *FieldInstance, fo *FormInstance) error {
+	v := fi.V
+	if v.IsNil || v.Kind != reflect.Int {
 		return nil
 	}
-	v := value.Value.(int)
-	if v < self.Value {
-		return errors.New(self.Message)
+	iv := v.Value.(int)
+	if iv < vl.Value {
+		return errors.New(vl.Message)
 	}
 	return nil
 }
@@ -157,13 +162,14 @@ type regexpValidator struct {
 	Validator
 }
 
-func (self regexpValidator) Validate(value *V, cleanedData CleanedData) error {
-	if value.IsNil || value.Kind != reflect.String || value.Value == "" {
+func (vl regexpValidator) Validate(fi *FieldInstance, fo *FormInstance) error {
+	v := fi.V
+	if v.IsNil || v.Kind != reflect.String || v.Value == "" {
 		return nil
 	}
-	s := value.Value.(string)
-	if !self.re.MatchString(s) {
-		return errors.New(self.Message)
+	sv := v.Value.(string)
+	if !vl.re.MatchString(sv) {
+		return errors.New(vl.Message)
 	}
 	return nil
 }
@@ -171,18 +177,18 @@ func (self regexpValidator) Validate(value *V, cleanedData CleanedData) error {
 // The regular expression pattern to search for the provided value.
 // Returns error if regxp#MatchString is False.
 func RegexpValidator(regex string, message ...string) regexpValidator {
-	self := regexpValidator{}
+	vl := regexpValidator{}
 	re, err := regexp.Compile(regex)
 	if err != nil {
 		panic(err)
 	}
-	self.re = re
+	vl.re = re
 	if len(message) > 0 {
-		self.Message = message[0]
+		vl.Message = message[0]
 	} else {
-		self.Message = fmt.Sprintf("Enter a valid value.")
+		vl.Message = fmt.Sprintf("Enter a valid value.")
 	}
-	return self
+	return vl
 }
 
 // An EmailValidator that ensures a value looks like an email address.

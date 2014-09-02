@@ -18,7 +18,7 @@ func main() {
 			gforms.Validators{
 				gforms.Required(),
 			},
-			gforms.NewSelectWidget(
+			gforms.SelectWidget(
 				map[string]string{},
 				func() gforms.SelectOptions {
 					return gforms.StringSelectOptions([][]string{
@@ -41,7 +41,7 @@ func main() {
 			obj := form.GetModel()
 			fmt.Fprintf(w, "%v <=> %v", form.CleanedData, obj)
 		} else {
-			fmt.Fprintf(w, "%v", form.Errors)
+			fmt.Fprintf(w, "%v", form.Errors())
 		}
 	})
 

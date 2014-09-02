@@ -1,110 +1,160 @@
 package gforms
 
-import (
-	"bytes"
-	"reflect"
-)
-
 type Field interface {
-	Clean(Data) (*V, error)
-	Validate(*V, CleanedData) error
-	Html(...RawData) string
-	html(...string) string
+	New() FieldInterface
+	// Get field name
 	GetName() string
-	GetWigdet() Widget
+	GetWidget() Widget
+	GetValidators() Validators
 }
 
-type ValidationError interface {
-	Error() string
+type Fields struct {
+	list    []Field
+	nameMap map[string]Field
+}
+
+// Get ordered list for field object.
+func (fs *Fields) GetList() []Field {
+	return fs.list
+}
+
+// Get field by name.
+func (fs *Fields) Get(name string) (Field, bool) {
+	v, ok := fs.nameMap[name]
+	return v, ok
+}
+
+func (fs *Fields) AddField(field Field) bool {
+	name := field.GetName()
+	_, exists := fs.Get(name)
+	if !exists {
+		fs.list = append(fs.list, field)
+		fs.nameMap[name] = field
+		return true
+	}
+	return false
+}
+
+func NewFields(fields ...Field) *Fields {
+	fs := Fields{}
+	fs.nameMap = map[string]Field{}
+	for _, field := range fields {
+		fs.nameMap[field.GetName()] = field
+	}
+	fs.list = fields
+	return &fs
 }
 
 type BaseField struct {
 	name       string
 	validators Validators
-	Widget     Widget
+	widget     Widget
 	Field
 }
 
-func (self *BaseField) GetName() string {
-	return self.name
+func (f *BaseField) GetName() string {
+	return f.name
 }
 
-func (self *BaseField) GetWigdet() Widget {
-	return self.Widget
+func (f *BaseField) GetWidget() Widget {
+	return f.widget
 }
 
-func (self *BaseField) Clean(data Data) (*V, error) {
-	m, hasField := data[self.GetName()]
-	if hasField {
-		v := m.rawValueAsString()
-		m.Kind = reflect.String
-		if v != nil {
-			m.Value = *v
-			m.IsNil = false
-			return m, nil
-		}
-	}
-	return nilV(), nil
+func (f *BaseField) GetValidators() Validators {
+	return f.validators
 }
 
-func (self *BaseField) Validate(value *V, cleanedData CleanedData) error {
-	if self.validators == nil {
+type FieldInterface interface {
+	GetModel() Field
+	GetName() string
+	GetV() *V
+	GetWidget() Widget
+	SetInitial(string)
+	Clean(Data) error
+	Validate(*FormInstance) []string
+	Html() string
+	html() string
+	Errors() []string
+	SetErrors([]string)
+	HasError() bool
+}
+
+type FieldInstance struct {
+	Model  Field
+	errors []string
+	V      *V
+	FieldInterface
+}
+
+func (f *FieldInstance) GetModel() Field {
+	return f.Model
+}
+
+func (f *FieldInstance) GetName() string {
+	return f.Model.GetName()
+}
+
+func (f *FieldInstance) GetWidget() Widget {
+	return f.Model.GetWidget()
+}
+
+func (f *FieldInstance) GetV() *V {
+	return f.V
+}
+
+func (f *FieldInstance) Errors() []string {
+	return f.errors
+}
+
+func (f *FieldInstance) SetErrors(errs []string) {
+	f.errors = errs
+}
+
+func (f *FieldInstance) HasError() bool {
+	return len(f.errors) != 0
+}
+
+func (f *FieldInstance) SetInitial(v string) {
+	f.V.RawStr = v
+}
+
+func (f *FieldInstance) Validate(fo *FormInstance) []string {
+	vs := f.Model.GetValidators()
+	if vs == nil {
 		return nil
 	}
-	for _, v := range self.validators {
-		err := v.Validate(value, cleanedData)
+	var errs []string
+	for _, v := range vs {
+		err := v.Validate(f, fo)
 		if err != nil {
-			return err
+			errs = append(errs, err.Error())
 		}
 	}
-	return nil
+	return errs
 }
 
-func fieldToHtml(field Field, rds ...RawData) string {
-	if len(rds) == 0 {
-		if field.GetWigdet() == nil {
-			return field.html()
-		} else {
-			return field.GetWigdet().html(field)
-		}
+type FieldInterfaces struct {
+	list    []FieldInterface
+	nameMap map[string]FieldInterface
+}
+
+func newFieldInterfaces(fs *Fields) *FieldInterfaces {
+	fis := new(FieldInterfaces)
+	fis.list = []FieldInterface{}
+	fis.nameMap = map[string]FieldInterface{}
+	for _, f := range fs.list {
+		nf := f.New()
+		fis.nameMap[f.GetName()] = nf
+		fis.list = append(fis.list, nf)
 	}
-	rd := rds[0]
-	v, hasField := rd[field.GetName()]
-	if field.GetWigdet() == nil {
-		if hasField {
-			return field.html(v)
-		} else {
-			return field.html()
-		}
+	return fis
+}
+
+func fieldToHtml(f FieldInterface) string {
+	gd := f.GetModel().GetWidget()
+	if gd == nil {
+		return f.html()
 	} else {
-		if hasField {
-			return field.GetWigdet().html(field, v)
-		} else {
-			return field.GetWigdet().html(field)
-		}
+		return gd.html(f)
 	}
-}
-
-type templateContext struct {
-	Field Field
-	Value string
-}
-
-func newTemplateContext(field Field, vs ...string) templateContext {
-	ctx := templateContext{
-		Field: field,
-	}
-	if len(vs) > 0 {
-		ctx.Value = vs[0]
-	}
-	return ctx
-}
-
-func renderTemplate(name string, ctx interface{}) string {
-	var buffer bytes.Buffer
-	err := Template.ExecuteTemplate(&buffer, name, ctx)
-	if err != nil {
-		panic(err)
-	}
-	return buffer.String()
 }

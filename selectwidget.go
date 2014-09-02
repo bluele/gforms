@@ -2,7 +2,15 @@ package gforms
 
 import (
 	"bytes"
+	"strings"
 )
+
+type selectWidget struct {
+	Multiple bool
+	Attrs    map[string]string
+	Maker    SelectOptionsMaker
+	Widget
+}
 
 type selectOptionValue struct {
 	Label    string
@@ -13,35 +21,14 @@ type selectOptionValue struct {
 
 type selectOptionsValues []*selectOptionValue
 
-type SelectContext struct {
-	Name    string
-	Attrs   map[string]string
-	Options selectOptionsValues
+type selectContext struct {
+	Multiple bool
+	Field    FieldInterface
+	Attrs    map[string]string
+	Options  selectOptionsValues
 }
 
-type SelectWidget struct {
-	Attrs map[string]string
-	Maker ChoiceMaker
-	Widget
-}
-
-func (self *SelectWidget) html(field Field, vs ...string) string {
-	var buffer bytes.Buffer
-	context := new(SelectContext)
-	opts := self.Maker()
-	for i := 0; i < opts.Len(); i++ {
-		context.Options = append(context.Options, &selectOptionValue{Label: opts.Label(i), Value: opts.Value(i), Selected: opts.Selected(i), Disabled: opts.Disabled(i)})
-	}
-	context.Name = field.GetName()
-	context.Attrs = self.Attrs
-	err := Template.ExecuteTemplate(&buffer, "SelectWidget", context)
-	if err != nil {
-		panic(err)
-	}
-	return buffer.String()
-}
-
-type ChoiceMaker func() SelectOptions
+type SelectOptionsMaker func() SelectOptions
 
 type SelectOptions interface {
 	Label(int) string
@@ -63,7 +50,7 @@ func (opt StringSelectOptions) Value(i int) string {
 
 func (opt StringSelectOptions) Selected(i int) bool {
 	selected := opt[i][2]
-	if selected == "true" {
+	if strings.ToLower(selected) == "true" {
 		return true
 	} else {
 		return false
@@ -72,7 +59,7 @@ func (opt StringSelectOptions) Selected(i int) bool {
 
 func (opt StringSelectOptions) Disabled(i int) bool {
 	disabled := opt[i][3]
-	if disabled == "true" {
+	if strings.ToLower(disabled) == "true" {
 		return true
 	} else {
 		return false
@@ -83,9 +70,40 @@ func (cs StringSelectOptions) Len() int {
 	return len(cs)
 }
 
-func NewSelectWidget(attrs map[string]string, cb ChoiceMaker) *SelectWidget {
-	self := new(SelectWidget)
-	self.Attrs = attrs
-	self.Maker = cb
-	return self
+func (wg *selectWidget) html(f FieldInterface) string {
+	var buffer bytes.Buffer
+	context := new(selectContext)
+	context.Field = f
+	context.Multiple = wg.Multiple
+	opts := wg.Maker()
+	for i := 0; i < opts.Len(); i++ {
+		context.Options = append(context.Options, &selectOptionValue{Label: opts.Label(i), Value: opts.Value(i), Selected: opts.Selected(i), Disabled: opts.Disabled(i)})
+	}
+	context.Attrs = wg.Attrs
+	err := Template.ExecuteTemplate(&buffer, "SelectWidget", context)
+	if err != nil {
+		panic(err)
+	}
+	return buffer.String()
+}
+
+func SelectWidget(attrs map[string]string, mk SelectOptionsMaker) *selectWidget {
+	wg := new(selectWidget)
+	if attrs == nil {
+		attrs = map[string]string{}
+	}
+	if isNilValue(mk) {
+		mk = func() SelectOptions {
+			return StringSelectOptions([][]string{})
+		}
+	}
+	wg.Maker = mk
+	wg.Attrs = attrs
+	return wg
+}
+
+func SelectMultipleWidget(attrs map[string]string, mk SelectOptionsMaker) *selectWidget {
+	wg := SelectWidget(attrs, mk)
+	wg.Multiple = true
+	return wg
 }

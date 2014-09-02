@@ -10,28 +10,31 @@ type IntegerField struct {
 	BaseField
 }
 
-func (self *IntegerField) Html(rds ...RawData) string {
-	return fieldToHtml(self, rds...)
+func (f *IntegerField) New() FieldInterface {
+	fi := new(IntegerFieldInstance)
+	fi.Model = f
+	fi.V = nilV("")
+	return fi
 }
 
-func (self *IntegerField) html(vs ...string) string {
-	return renderTemplate("TextTypeField", newTemplateContext(self, vs...))
+type IntegerFieldInstance struct {
+	FieldInstance
 }
 
-// Create a new field for integer value.
-func NewIntegerField(name string, vs Validators, ws ...Widget) *IntegerField {
-	self := new(IntegerField)
-	self.name = name
-	self.validators = vs
+func NewIntegerField(name string, vs Validators, ws ...Widget) Field {
+	f := new(IntegerField)
+	f.name = name
+	f.validators = vs
 	if len(ws) > 0 {
-		self.Widget = ws[0]
+		f.widget = ws[0]
 	}
-	return self
+	return f
 }
 
-func (self *IntegerField) Clean(data Data) (*V, error) {
-	m, hasField := data[self.GetName()]
+func (f *IntegerFieldInstance) Clean(data Data) error {
+	m, hasField := data[f.Model.GetName()]
 	if hasField {
+		f.V = m
 		v := m.rawValueAsString()
 		m.Kind = reflect.Int
 		if v != nil && (*v) != "" {
@@ -39,10 +42,18 @@ func (self *IntegerField) Clean(data Data) (*V, error) {
 			if err == nil {
 				m.Value = iv
 				m.IsNil = false
-				return m, nil
+				return nil
 			}
-			return nil, errors.New("This field should be specified as int.")
+			return errors.New("This field should be specified as int.")
 		}
 	}
-	return nilV(), nil
+	return nil
+}
+
+func (f *IntegerFieldInstance) html() string {
+	return renderTemplate("TextTypeField", newTemplateContext(f))
+}
+
+func (f *IntegerFieldInstance) Html() string {
+	return fieldToHtml(f)
 }

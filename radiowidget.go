@@ -4,7 +4,7 @@ import (
 	"bytes"
 )
 
-type RadioWidget struct {
+type radioSelectWidget struct {
 	Attrs map[string]string
 	Maker RadioOptionsMaker
 	Widget
@@ -19,33 +19,10 @@ type radioOptionValue struct {
 
 type radioOptionValues []*radioOptionValue
 
-type RadioContext struct {
-	Name    string
+type radioContext struct {
+	Field   FieldInterface
 	Attrs   map[string]string
 	Options radioOptionValues
-}
-
-func (self *RadioWidget) html(field Field, vs ...string) string {
-	var buffer bytes.Buffer
-	cx := new(RadioContext)
-	opts := self.Maker()
-	for i := 0; i < opts.Len(); i++ {
-		cx.Options = append(
-			cx.Options,
-			&radioOptionValue{
-				Label:    opts.Label(i),
-				Value:    opts.Value(i),
-				Checked:  opts.Checked(i),
-				Disabled: opts.Disabled(i),
-			})
-	}
-	cx.Name = field.GetName()
-	cx.Attrs = self.Attrs
-	err := Template.ExecuteTemplate(&buffer, "RadioWidget", cx)
-	if err != nil {
-		panic(err)
-	}
-	return buffer.String()
 }
 
 type RadioOptionsMaker func() RadioOptions
@@ -56,13 +33,6 @@ type RadioOptions interface {
 	Checked(int) bool
 	Disabled(int) bool
 	Len() int
-}
-
-func NewRadioWidget(attrs map[string]string, cb RadioOptionsMaker) *RadioWidget {
-	self := new(RadioWidget)
-	self.Attrs = attrs
-	self.Maker = cb
-	return self
 }
 
 type StringRadioOptions [][]string
@@ -95,4 +65,34 @@ func (opt StringRadioOptions) Disabled(i int) bool {
 
 func (opt StringRadioOptions) Len() int {
 	return len(opt)
+}
+
+func (wg *radioSelectWidget) html(f FieldInterface) string {
+	var buffer bytes.Buffer
+	ctx := new(radioContext)
+	opts := wg.Maker()
+	for i := 0; i < opts.Len(); i++ {
+		ctx.Options = append(
+			ctx.Options,
+			&radioOptionValue{
+				Label:    opts.Label(i),
+				Value:    opts.Value(i),
+				Checked:  opts.Checked(i),
+				Disabled: opts.Disabled(i),
+			})
+	}
+	ctx.Field = f
+	ctx.Attrs = wg.Attrs
+	err := Template.ExecuteTemplate(&buffer, "RadioWidget", ctx)
+	if err != nil {
+		panic(err)
+	}
+	return buffer.String()
+}
+
+func RadioSelectWidget(attrs map[string]string, mk RadioOptionsMaker) *radioSelectWidget {
+	wg := new(radioSelectWidget)
+	wg.Attrs = attrs
+	wg.Maker = mk
+	return wg
 }

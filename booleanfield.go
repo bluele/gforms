@@ -9,29 +9,36 @@ type BooleanField struct {
 	BaseField
 }
 
+func (f *BooleanField) New() FieldInterface {
+	fi := new(BooleanFieldInstance)
+	fi.Model = f
+	fi.V = nilV("")
+	return fi
+}
+
+type BooleanFieldInstance struct {
+	FieldInstance
+}
+
 type booleanContext struct {
-	Name  string
-	Value string
+	Field   FieldInterface
+	Checked bool
 }
 
-func (self *BooleanField) Html(rds ...RawData) string {
-	return fieldToHtml(self, rds...)
-}
-
-func (self *BooleanField) html(vs ...string) string {
-	var buffer bytes.Buffer
-	cx := new(booleanContext)
-	cx.Name = self.GetName()
-	err := Template.ExecuteTemplate(&buffer, "BooleanTypeField", cx)
-	if err != nil {
-		panic(err)
+func NewBooleanField(name string, vs Validators, ws ...Widget) Field {
+	f := new(BooleanField)
+	f.name = name
+	f.validators = vs
+	if len(ws) > 0 {
+		f.widget = ws[0]
 	}
-	return buffer.String()
+	return f
 }
 
-func (self *BooleanField) Clean(data Data) (*V, error) {
-	m, hasField := data[self.GetName()]
+func (f *BooleanFieldInstance) Clean(data Data) error {
+	m, hasField := data[f.GetName()]
 	if hasField {
+		f.V = m
 		v := false
 		if m.Kind == reflect.String {
 			vs := m.rawValueAsString()
@@ -44,21 +51,28 @@ func (self *BooleanField) Clean(data Data) (*V, error) {
 		m.Value = v
 		m.Kind = reflect.Bool
 		m.IsNil = false
-		return m, nil
+		return nil
 	}
-	nv := newV(false, reflect.Bool)
+	nv := newV("", false, reflect.Bool)
 	nv.Value = false
 	nv.IsNil = false
-	return nv, nil
+	f.V = nv
+	return nil
 }
 
-// Create a new field for boolean value.
-func NewBooleanField(name string, vs Validators, ws ...Widget) *BooleanField {
-	self := new(BooleanField)
-	self.name = name
-	self.validators = vs
-	if len(ws) > 0 {
-		self.Widget = ws[0]
+func (f *BooleanFieldInstance) html() string {
+	var buffer bytes.Buffer
+	cx := new(booleanContext)
+	cx.Field = f
+	checked, _ := f.V.Value.(bool)
+	cx.Checked = checked
+	err := Template.ExecuteTemplate(&buffer, "BooleanTypeField", cx)
+	if err != nil {
+		panic(err)
 	}
-	return self
+	return buffer.String()
+}
+
+func (f *BooleanFieldInstance) Html() string {
+	return fieldToHtml(f)
 }

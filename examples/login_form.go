@@ -10,29 +10,32 @@ import (
 )
 
 type User struct {
-	Name     string `gforms:"name"`
+	Email    string `gforms:"email"`
 	Password string `gforms:"password"`
 }
 
 func main() {
-	tpl := template.Must(template.ParseFiles(path.Join(getTemplatePath(), "login_form.html")))
-	loginForm := gforms.DefineForm(gforms.NewFields(
-		gforms.NewTextField(
-			"name",
-			gforms.Validators{
-				gforms.Required(),
-			},
-		),
-		gforms.NewTextField(
-			"password",
-			gforms.Validators{
-				gforms.Required(),
-				gforms.MinLengthValidator(4),
-				gforms.MaxLengthValidator(16),
-			},
-			gforms.NewPasswordWidget(map[string]string{}),
-		),
-	))
+	tpl := template.Must(template.ParseFiles(path.Join(getTemplatePath(), "post_form.html")))
+	loginForm := gforms.DefineForm(
+		gforms.NewFields(
+			gforms.NewTextField(
+				"email",
+				gforms.Validators{
+					gforms.Required(),
+					gforms.MinLengthValidator(4),
+					gforms.EmailValidator(),
+				},
+			),
+			gforms.NewTextField(
+				"password",
+				gforms.Validators{
+					gforms.Required(),
+					gforms.MinLengthValidator(4),
+					gforms.MaxLengthValidator(16),
+				},
+				gforms.PasswordInputWidget(map[string]string{}),
+			),
+		))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 		form := loginForm(r)

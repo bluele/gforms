@@ -17,17 +17,17 @@ type CustomValidator struct {
 	gforms.Validator
 }
 
-func (self CustomValidator) Validate(v *gforms.V, cleanedData gforms.CleanedData) error {
-	if !v.IsNil && v.Kind == reflect.String {
-		s := v.Value.(string)
-		for _, t := range self.Langs {
-			if s == t {
-				return nil
-			}
-		}
-		return errors.New(fmt.Sprintf("Unknown lang: %v", s))
+func (vl CustomValidator) Validate(fi *gforms.FieldInstance, fo *gforms.FormInstance) error {
+	v := fi.V
+	if v.IsNil || v.Kind != reflect.String || v.Value == "" {
+		return nil
 	}
-	return nil
+	for _, t := range vl.Langs {
+		if v.Value == t {
+			return nil
+		}
+	}
+	return errors.New(fmt.Sprintf("Unknown lang: %v", v.Value))
 }
 
 func main() {
@@ -43,17 +43,17 @@ func main() {
 		),
 	))
 
-	http.HandleFunc("/langs", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		form := langForm(r)
 		if r.Method != "POST" {
 			fmt.Fprintf(w, form.Html())
 			return
 		}
 		if form.IsValid() { // Validate request body
-			lang := form.GetModel()
+			lang := form.GetModel().(Lang)
 			fmt.Fprintf(w, "%v", lang)
 		} else {
-			fmt.Fprintf(w, "%v", form.Errors)
+			fmt.Fprintf(w, "%v", form.Errors())
 		}
 	})
 	http.ListenAndServe(":9000", nil)

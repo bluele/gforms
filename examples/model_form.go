@@ -33,7 +33,7 @@ func main() {
 			fmt.Fprintf(w, "%v => %v", form.CleanedData, user)
 		} else {
 			fmt.Println(form.Html())
-			fmt.Fprintf(w, "%v => %v", form.RawData, form.Errors)
+			fmt.Fprintf(w, "%v", form.Errors())
 		}
 	})
 	http.ListenAndServe(":9000", nil)

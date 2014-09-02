@@ -1,0 +1,12 @@
+<form method="post">
+{{range $i, $field := .GetFields}}
+  <label>{{$field.GetName}}: </label>{{$field.Html}}
+  {{if $field.HasError}}
+    {{range $ei, $err := $field.Errors}}
+    <label>{{$err}}</label>
+    {{end}}
+  {{end}}
+  <br />
+{{end}}
+<input type="submit">
+</form>

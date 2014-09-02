@@ -1,21 +1,35 @@
 package gforms
 
 import (
-	"mime/multipart"
 	"reflect"
 )
-
-type RawData map[string]string
 
 type Data map[string]*V
 
 type V struct {
+	RawStr   string
 	RawValue interface{}
 	// not ptr-value
 	Value interface{}
 	IsNil bool
 	// value's kind
 	Kind reflect.Kind
+}
+
+func newV(str string, value interface{}, kind reflect.Kind) *V {
+	v := new(V)
+	v.Kind = kind
+	v.IsNil = true
+	v.RawStr = str
+	v.RawValue = value
+	return v
+}
+
+func nilV(str string) *V {
+	v := new(V)
+	v.IsNil = true
+	v.RawStr = str
+	return v
 }
 
 func (self *V) rawValueAsString() *string {
@@ -27,23 +41,6 @@ func (self *V) rawValueAsString() *string {
 	}
 }
 
-func (self *V) rawValueAsStringArray() []string {
-	v, ok := self.RawValue.([]string)
-	if ok {
-		return v
-	} else {
-		return []string{}
-	}
-}
-
-func (self *V) rawValueAsFileHeader() multipart.FileHeader {
-	headers, ok := self.RawValue.([]*multipart.FileHeader)
-	if ok {
-		return *headers[0]
-	}
-	return multipart.FileHeader{}
-}
-
 func (self *V) rawValueAsBool() bool {
 	v, ok := self.RawValue.(bool)
 	if ok {
@@ -53,16 +50,11 @@ func (self *V) rawValueAsBool() bool {
 	}
 }
 
-func newV(value interface{}, kind reflect.Kind) *V {
-	v := new(V)
-	v.RawValue = value
-	v.Kind = kind
-	v.IsNil = true
-	return v
-}
-
-func nilV() *V {
-	v := new(V)
-	v.IsNil = true
-	return v
+func (self *V) rawValueAsStringArray() []string {
+	v, ok := self.RawValue.([]string)
+	if ok {
+		return v
+	} else {
+		return []string{}
+	}
 }

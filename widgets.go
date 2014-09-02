@@ -1,12 +1,12 @@
 package gforms
 
 type Widget interface {
-	html(Field, ...string) string
+	html(FieldInterface) string
 }
 
 type widgetContext struct {
 	Type  string
-	Name  string
+	Field FieldInterface
 	Value string
 	Attrs map[string]string
 }

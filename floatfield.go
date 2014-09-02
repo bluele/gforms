@@ -10,17 +10,31 @@ type FloatField struct {
 	BaseField
 }
 
-func (self *FloatField) Html(rds ...RawData) string {
-	return fieldToHtml(self, rds...)
+func (f *FloatField) New() FieldInterface {
+	fi := new(FloatFieldInstance)
+	fi.Model = f
+	fi.V = nilV("")
+	return fi
 }
 
-func (self *FloatField) html(vs ...string) string {
-	return renderTemplate("TextTypeField", newTemplateContext(self, vs...))
+type FloatFieldInstance struct {
+	FieldInstance
 }
 
-func (self *FloatField) Clean(data Data) (*V, error) {
-	m, hasField := data[self.GetName()]
+func NewFloatField(name string, vs Validators, ws ...Widget) Field {
+	f := new(FloatField)
+	f.name = name
+	f.validators = vs
+	if len(ws) > 0 {
+		f.widget = ws[0]
+	}
+	return f
+}
+
+func (f *FloatFieldInstance) Clean(data Data) error {
+	m, hasField := data[f.GetName()]
 	if hasField {
+		f.V = m
 		v := m.rawValueAsString()
 		m.Kind = reflect.Float64
 		if v != nil && (*v) != "" {
@@ -28,21 +42,18 @@ func (self *FloatField) Clean(data Data) (*V, error) {
 			if err == nil {
 				m.Value = fv
 				m.IsNil = false
-				return m, nil
+				return nil
 			}
-			return nil, errors.New("This field should be specified as float.")
+			return errors.New("This field should be specified as float.")
 		}
 	}
-	return nilV(), nil
+	return nil
 }
 
-// Create a new field for float value.
-func NewFloatField(name string, vs Validators, ws ...Widget) *FloatField {
-	self := new(FloatField)
-	self.name = name
-	self.validators = vs
-	if len(ws) > 0 {
-		self.Widget = ws[0]
-	}
-	return self
+func (f *FloatFieldInstance) html() string {
+	return renderTemplate("TextTypeField", newTemplateContext(f))
+}
+
+func (f *FloatFieldInstance) Html() string {
+	return fieldToHtml(f)
 }

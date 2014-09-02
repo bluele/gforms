@@ -73,7 +73,7 @@ func main() {
       form.MapTo(&user)
       fmt.Fprintf(w, "%v", user)
     } else {
-      fmt.Fprintf(w, "%v", form.Errors)
+      fmt.Fprintf(w, "%v", form.Errors())
     }
   })
   http.ListenAndServe(":9000", nil)
@@ -153,7 +153,7 @@ func main() {
       user := form.GetModel().(User)
       fmt.Fprintf(w, "%v", user)
     } else {
-      fmt.Fprintf(w, "%v", form.Errors)
+      fmt.Fprintf(w, "%v", form.Errors())
     }
   })
   http.ListenAndServe(":9000", nil)
@@ -176,6 +176,7 @@ map[name:This field is required]
 
 # also support json request
 $ curl -X POST -H "Content-type: application/json" localhost:9000/users -d '{"name":"bluele", "weight":71.9}'
+{bluele 71.9}
 ```
 
 ## Render HTML-Form
@@ -201,7 +202,7 @@ customForm := gforms.DefineForm(gforms.NewFields(
     gforms.Validators{
       gforms.Required(),
     },
-    gforms.NewTextWidget(
+    gforms.TextInputWidget(
       map[string]string{
         "class": "custom",
       },
@@ -255,11 +256,21 @@ form := gforms.DefineForm(gforms.NewFields(
 ))
 ```
 
+### MultipleTextField
+
+```go
+form := gforms.DefineForm(gforms.NewFields(
+  gforms.NewMultipleTextField(
+    "names",
+    gforms.Validators{},
+))
+```
+
 ## Support Validators
 
 ### Required validator
 
-Added an error msg to FormInstance.Errors if the field is not provided.
+Added an error msg to FormInstance.Errors() if the field is not provided.
 
 ```go
 gforms.Validators{
@@ -269,7 +280,7 @@ gforms.Validators{
 
 ### Regexp validator
 
-Added an error msg to FormInstance.Errors if the regexp doesn't matched a value.
+Added an error msg to FormInstance.Errors() if the regexp doesn't matched a value.
 
 ```go
 gforms.Validators{
@@ -279,7 +290,7 @@ gforms.Validators{
 
 ### Email validator
 
-Added an error msg to FormInstance.Errors if a value doesn't looks like an email address.
+Added an error msg to FormInstance.Errors() if a value doesn't looks like an email address.
 
 ```go
 gforms.Validators{
@@ -289,7 +300,7 @@ gforms.Validators{
 
 ### URL Validator
 
-Added an error msg to FormInstance.Errors if a value doesn't looks like an url.
+Added an error msg to FormInstance.Errors() if a value doesn't looks like an url.
 
 ```go
 gforms.Validators{
@@ -299,7 +310,7 @@ gforms.Validators{
 
 ### MinLength Validator
 
-Added an error msg to FormInstance.Errors if the length of value is less than specified first argument.
+Added an error msg to FormInstance.Errors() if the length of value is less than specified first argument.
 
 ```go
 gforms.Validators{
@@ -309,7 +320,7 @@ gforms.Validators{
 
 ### MaxLength Validator
 
-Added an error msg to FormInstance.Errors if the length of value is greater than specified first argument.
+Added an error msg to FormInstance.Errors() if the length of value is greater than specified first argument.
 
 ```go
 gforms.Validators{
@@ -319,7 +330,7 @@ gforms.Validators{
 
 ### MinValueValidator
 
-Added an error msg to FormInstance.Errors if value is less than specified first argument.
+Added an error msg to FormInstance.Errors() if value is less than specified first argument.
 
 ```go
 gforms.Validators{
@@ -329,7 +340,7 @@ gforms.Validators{
 
 ### MaxValueValidator
 
-Added an error msg to FormInstance.Errors if value is greater than specified first argument.
+Added an error msg to FormInstance.Errors() if value is greater than specified first argument.
 
 ```go
 gforms.Validators{
@@ -348,7 +359,7 @@ Form := gforms.DefineForm(gforms.NewFields(
     gforms.Validators{
       gforms.Required(),
     },
-    gforms.NewSelectWidget(
+    gforms.SelectWidget(
       map[string]string{
         "class": "custom",
       },
@@ -373,7 +384,7 @@ fmt.Println(form.Html())
 */
 ```
 
-### RadioWidget
+### RadioSelectWidget
 
 ```go
 Form := gforms.DefineForm(gforms.NewFields(
@@ -382,7 +393,7 @@ Form := gforms.DefineForm(gforms.NewFields(
       gforms.Validators{
         gforms.Required(),
       },
-      gforms.NewRadioWidget(
+      gforms.RadioSelectWidget(
         map[string]string{
           "class": "custom",
         },
@@ -405,21 +416,21 @@ fmt.Println(form.Html())
 */
 ```
 
-### CheckboxWidget
+### CheckboxMultipleWidget
 
 ```go
 Form := gforms.DefineForm(gforms.NewFields(
-    gforms.NewTextField(
+    gforms.NewMultipleTextField(
       "lang",
       gforms.Validators{
         gforms.Required(),
       },
-      gforms.NewRadioWidget(
+      gforms.CheckboxMultipleWidget(
         map[string]string{
           "class": "custom",
         },
-        func() gforms.RadioOptions {
-          return gforms.StringRadioOptions([][]string{
+        func() gforms.CheckboxOptions {
+          return gforms.StringCheckboxOptions([][]string{
             {"Golang", "0", "false", "false"},
             {"Python", "1", "false", "true"},
           })

@@ -2,287 +2,107 @@ package gforms
 
 import (
 	"bytes"
-	"fmt"
 	"mime/multipart"
 	"net/http"
-	"net/url"
 	"reflect"
 )
 
-// Form fields list.
-type Fields struct {
-	fields    []Field
-	fieldsMap map[string]Field
-}
-
-func (self *Fields) Index(i int) Field {
-	return self.fields[i]
-}
-
-func (self *Fields) NamedBy(name string) (Field, bool) {
-	v, ok := self.fieldsMap[name]
-	return v, ok
-}
-
-// Key-Value maps for field name and field object.
-func (self *Fields) GetMap() map[string]Field {
-	return self.fieldsMap
-}
-
-// Get ordered list for field object.
-func (self *Fields) GetList() []Field {
-	return self.fields
-}
-
-func (self *Fields) AddField(field Field) bool {
-	name := field.GetName()
-	_, exists := self.NamedBy(name)
-	if !exists {
-		self.fields = append(self.fields, field)
-		self.fieldsMap[name] = field
-		return true
-	}
-	return false
-}
-
-func NewFields(fields ...Field) *Fields {
-	fs := Fields{}
-	fs.fieldsMap = make(map[string]Field)
-	for _, field := range fields {
-		fs.fieldsMap[field.GetName()] = field
-	}
-	fs.fields = fields
-	return &fs
-}
+type Form func(...*http.Request) *FormInstance
 
 // cleaned data for all fields.
 type CleanedData map[string]interface{}
 
 type FormInstance struct {
-	Fields      *Fields
+	Fields      *FieldInterfaces
 	Data        Data
-	RawData     RawData
 	CleanedData CleanedData
-	Errors      Errors
+	ParseError  error
 }
 
-type FieldContext struct {
-	Name  string
-	Value reflect.Value
+func (f *FormInstance) GetField(name string) (FieldInterface, bool) {
+	v, ok := f.Fields.nameMap[name]
+	return v, ok
 }
 
-type ModelContext struct {
-	ModelType     reflect.Type
-	FieldContexts []FieldContext
+func (f *FormInstance) GetFields() []FieldInterface {
+	return f.Fields.list
 }
 
-// Auto Generate fileds by struct model.
-func (self ModelContext) generateFields() []Field {
-	fields := []Field{}
-	for _, c := range self.FieldContexts {
-		var field Field
-		switch c.Value.Kind() {
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			field = NewIntegerField(c.Name, nil)
-		case reflect.Float32, reflect.Float64:
-			field = NewFloatField(c.Name, nil)
-		case reflect.String:
-			field = NewTextField(c.Name, nil)
-		default:
-			panic(fmt.Sprintf("Error: Unknown field type: %v", c.Value.Kind()))
-		}
-		fields = append(fields, field)
-	}
-	return fields
-}
-
-func newModelContext(model interface{}) ModelContext {
-	mType := reflect.TypeOf(model)
-	mValue := reflect.ValueOf(model)
-	for {
-		if mType.Kind() == reflect.Ptr {
-			mType = mType.Elem()
-			mValue = mValue.Elem()
-		} else {
-			break
+func (f *FormInstance) Errors() Errors {
+	errs := map[string][]string{}
+	var err []string
+	for _, field := range f.Fields.list {
+		name := field.GetModel().GetName()
+		err = field.Errors()
+		if err != nil && len(err) > 0 {
+			errs[name] = err
 		}
 	}
-	c := ModelContext{}
-	c.ModelType = mType
-	c.FieldContexts = []FieldContext{}
-
-	for i := 0; i < mValue.NumField(); i++ {
-		typeField := mType.Field(i)
-		tag := typeField.Tag.Get("gforms")
-		if tag == "" {
-			tag = typeField.Name
-		} else if tag == "-" {
-			continue
-		}
-		c.FieldContexts = append(c.FieldContexts, FieldContext{
-			tag,
-			mValue.Field(i),
-		})
-	}
-	return c
+	return errs
 }
 
-type ModelFormInstance struct {
-	FormInstance
-	ModelContext
-}
-
-func newModelFormInstance(model interface{}, fields *Fields) ModelFormInstance {
-	c := newModelContext(model)
-	for _, gf := range c.generateFields() {
-		fields.AddField(gf)
-	}
-	inst := ModelFormInstance{
-		ModelContext: c,
-	}
-	inst.Fields = fields
-	return inst
-}
-
-type Form func(...*http.Request) *FormInstance
-
-// Initialize with http request.
-func (f Form) FromRequest(r *http.Request) *FormInstance {
-	return f(r)
-}
-
-// Intialize with map object.
-func (f Form) FromValues(v url.Values) *FormInstance {
-	fi := f()
-	fi.parseValues(v)
-	return fi
-}
-
-type ModelForm func(...*http.Request) *ModelFormInstance
-
-// Initialize form data with http request.
-func (f ModelForm) FromRequest(r *http.Request) *ModelFormInstance {
-	return f(r)
-}
-
-// Intialize form data with map object.
-func (f ModelForm) FromValues(v url.Values) *ModelFormInstance {
-	fi := f(nil)
-	fi.parseValues(v)
-	return fi
-}
-
-// Define a new form object with specified fields.
-func DefineForm(fields *Fields) Form {
-	return func(r ...*http.Request) *FormInstance {
-		f := FormInstance{
-			Fields: fields,
-		}
-		if len(r) > 0 {
-			f.parseRequest(r[0])
-		}
-		return &f
-	}
-}
-
-// Define a new form with generating fields from model's attributes and specified fields.
-func DefineModelForm(model interface{}, fields *Fields) ModelForm {
-	return func(r ...*http.Request) *ModelFormInstance {
-		f := newModelFormInstance(model, fields)
-		if len(r) > 0 {
-			f.parseRequest(r[0])
-		}
-		return &f
-	}
-}
-
-type Cleaner interface {
-	Clean(string, Data) (*V, error)
-}
-
-// Check validation for forminstance data.
-func (self *FormInstance) IsValid() bool {
+func (f *FormInstance) IsValid() bool {
 	isValid := true
-	cleanedData := CleanedData{}
-	errors := map[string]string{}
+	f.CleanedData = CleanedData{}
 
-	for _, field := range self.Fields.fields {
-		name := field.GetName()
-		widget := field.GetWigdet()
+	for _, field := range f.Fields.list {
 		var err error
-		var cleanedValue *V
-		if widget == nil {
-			cleanedValue, err = field.Clean(self.Data)
-		} else {
-			if cleaner, ok := widget.(Cleaner); ok {
-				cleanedValue, err = cleaner.Clean(name, self.Data)
-			} else {
-				cleanedValue, err = field.Clean(self.Data)
-			}
-		}
-
+		name := field.GetModel().GetName()
+		err = field.Clean(f.Data)
 		if err != nil {
-			errors[name] = err.Error()
+			field.SetErrors([]string{err.Error()})
 			isValid = false
 			continue
 		}
 
-		err = field.Validate(cleanedValue, cleanedData)
-		if err != nil {
-			errors[name] = err.Error()
+		errs := field.Validate(f)
+		if len(errs) > 0 {
+			field.SetErrors(errs)
 			isValid = false
 			continue
 		}
-		if !cleanedValue.IsNil {
-			cleanedData[name] = cleanedValue.Value
-		}
-	}
 
-	if isValid {
-		self.CleanedData = cleanedData
-	} else {
-		self.Errors = errors
+		if !field.GetV().IsNil {
+			f.CleanedData[name] = field.GetV().Value
+		}
 	}
 	return isValid
 }
 
-func (self *FormInstance) parseRequest(req *http.Request) error {
-	data, rawData, err := parseReuqestBody(req)
+func (f *FormInstance) parseRequest(req *http.Request) error {
+	data, err := parseReuqestBody(req)
 	if err != nil {
 		return err
 	}
-	if data == nil || rawData == nil {
+	if data == nil {
 		return nil
 	}
-	self.Data = *data
-	self.RawData = *rawData
+	f.Data = *data
 	return nil
 }
 
-func (self *FormInstance) parseValues(v url.Values) error {
-	data, rawData, err := bindValues(v)
-	if err != nil {
-		return err
-	}
-	if data == nil || rawData == nil {
-		return nil
-	}
-	self.Data = *data
-	self.RawData = *rawData
-	return nil
-}
-
-func (self *FormInstance) Html() string {
+func (f *FormInstance) Html() string {
 	var html bytes.Buffer
-	for _, field := range self.Fields.fields {
-		html.WriteString(field.Html(self.RawData) + "\n")
+	for _, field := range f.Fields.list {
+		html.WriteString(field.Html() + "\r\n")
 	}
 	return html.String()
 }
 
+func DefineForm(fs *Fields) Form {
+	return func(r ...*http.Request) *FormInstance {
+		f := new(FormInstance)
+		f.Fields = newFieldInterfaces(fs)
+		if len(r) > 0 {
+			f.ParseError = f.parseRequest(r[0])
+		}
+		return f
+	}
+}
+
 // maps cleanedData to specified model.
-func (self *FormInstance) MapTo(model interface{}) {
-	if self.CleanedData == nil {
+func (fi *FormInstance) MapTo(model interface{}) {
+	if fi.CleanedData == nil {
 		panic("MapTo method should be called after calling IsValid() method.")
 	}
 	if reflect.TypeOf(model).Kind() != reflect.Ptr {
@@ -299,7 +119,7 @@ func (self *FormInstance) MapTo(model interface{}) {
 		} else if tag == "-" {
 			continue
 		}
-		v, ok := self.CleanedData[tag]
+		v, ok := fi.CleanedData[tag]
 		if ok {
 			valueField := mValue.Field(i)
 			switch valueField.Kind() {
@@ -347,10 +167,4 @@ func (self *FormInstance) MapTo(model interface{}) {
 			}
 		}
 	}
-}
-
-func (self *ModelFormInstance) GetModel() interface{} {
-	model := reflect.New(self.ModelType)
-	self.MapTo(model.Interface())
-	return model.Elem().Interface()
 }

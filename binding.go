@@ -14,13 +14,13 @@ import (
 	"unicode/utf8"
 )
 
-func parseReuqestBody(req *http.Request) (*Data, *RawData, error) {
+func parseReuqestBody(req *http.Request) (*Data, error) {
 	if isNilValue(req) {
-		return nil, nil, errors.New("*http.Request is nil.")
+		return nil, errors.New("*http.Request is nil.")
 	}
 	contentType := req.Header.Get("Content-Type")
 	if req.Method == "POST" || req.Method == "PUT" || contentType != "" {
-		if strings.Contains(contentType, "json") {
+		if contentType == "application/json" {
 			return bindJson(req)
 		} else if strings.Contains(contentType, "multipart/form-data") {
 			return bindMultiPartForm(req)
@@ -28,15 +28,14 @@ func parseReuqestBody(req *http.Request) (*Data, *RawData, error) {
 			return bindForm(req)
 		}
 	}
-	return nil, nil, nil
+	return nil, nil
 }
 
-func bindJson(req *http.Request) (*Data, *RawData, error) {
+func bindJson(req *http.Request) (*Data, error) {
 	var jsonBody map[string]json.RawMessage
 	data := Data{}
-	rawData := RawData{}
 	if req.Body == nil {
-		return &data, &rawData, nil
+		return &data, nil
 	}
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -44,75 +43,66 @@ func bindJson(req *http.Request) (*Data, *RawData, error) {
 	}
 	err = json.Unmarshal(body, &jsonBody)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	for k, v := range jsonBody {
 		switch c := v[0]; c {
 		case 'n':
-			data[k] = nilV()
-			rawData[k] = string(v)
+			data[k] = nilV(string(v))
 		case 't', 'f':
 			if c == 't' {
-				data[k] = newV(true, reflect.Bool)
+				data[k] = newV(string(v), true, reflect.Bool)
 			} else {
-				data[k] = newV(false, reflect.Bool)
+				data[k] = newV(string(v), false, reflect.Bool)
 			}
-			rawData[k] = string(v)
 		case '"':
 			s, ok := unquoteBytes(v)
 			if ok {
 				str := string(s)
-				data[k] = newV([]string{str}, reflect.String)
-				rawData[k] = str
+				data[k] = newV(str, []string{str}, reflect.String)
 			}
 		default:
-			data[k] = newV([]string{string(v)}, reflect.String)
-			rawData[k] = string(v)
+			data[k] = newV(string(v), []string{string(v)}, reflect.String)
 		}
 	}
-	return &data, &rawData, nil
+	return &data, nil
 }
 
-func bindForm(req *http.Request) (*Data, *RawData, error) {
+func bindForm(req *http.Request) (*Data, error) {
 	req.ParseForm()
 	data := Data{}
-	rawData := RawData{}
 	for name, v := range req.Form {
 		if len(v) != 0 {
-			data[name] = newV(v, reflect.String)
-			rawData[name] = v[0]
+			data[name] = newV(v[0], v, reflect.String)
 		}
 	}
-	return &data, &rawData, nil
+	return &data, nil
 }
 
-func bindMultiPartForm(req *http.Request) (*Data, *RawData, error) {
+func bindMultiPartForm(req *http.Request) (*Data, error) {
 	req.ParseMultipartForm(32 << 20)
 	data := Data{}
-	rawData := RawData{}
 	for name, v := range req.MultipartForm.Value {
 		if len(v) != 0 {
-			data[name] = newV(v, reflect.String)
+			data[name] = newV(v[0], v, reflect.String)
 		}
 	}
 	for name, v := range req.MultipartForm.File {
 		if len(v) != 0 {
-			data[name] = newV(v, reflect.Array)
+			data[name] = newV("", v, reflect.Array)
 		}
 	}
-	return &data, &rawData, nil
+	return &data, nil
 }
 
-func bindValues(uv url.Values) (*Data, *RawData, error) {
+func bindValues(uv url.Values) (*Data, error) {
 	data := Data{}
-	rawData := RawData{}
 	for name, v := range uv {
 		if len(v) != 0 {
-			data[name] = newV(v, reflect.String)
-			rawData[name] = v[0]
+			data[name] = newV(v[0], v, reflect.String)
 		}
 	}
-	return &data, &rawData, nil
+	return &data, nil
 }
 
 func unquoteBytes(s []byte) (t []byte, ok bool) {
