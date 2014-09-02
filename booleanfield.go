@@ -25,7 +25,7 @@ type booleanContext struct {
 	Checked bool
 }
 
-func NewBooleanField(name string, vs Validators, ws ...Widget) Field {
+func NewBooleanField(name string, vs Validators, ws ...Widget) *BooleanField {
 	f := new(BooleanField)
 	f.name = name
 	f.validators = vs

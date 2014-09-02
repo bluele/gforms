@@ -20,7 +20,7 @@ type TextFieldInstance struct {
 }
 
 // Create a new field for string value.
-func NewTextField(name string, vs Validators, ws ...Widget) Field {
+func NewTextField(name string, vs Validators, ws ...Widget) *TextField {
 	f := new(TextField)
 	f.name = name
 	f.validators = vs

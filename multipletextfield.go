@@ -19,7 +19,7 @@ type MultipleTextFieldInstance struct {
 	FieldInstance
 }
 
-func NewMultipleTextField(name string, vs Validators, ws ...Widget) Field {
+func NewMultipleTextField(name string, vs Validators, ws ...Widget) *MultipleTextField {
 	f := new(MultipleTextField)
 	f.name = name
 	f.validators = vs

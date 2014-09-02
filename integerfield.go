@@ -8,10 +8,16 @@ import (
 
 type IntegerField struct {
 	BaseField
+	ErrorMessage string
 }
 
 func (f *IntegerField) New() FieldInterface {
 	fi := new(IntegerFieldInstance)
+	if f.ErrorMessage == "" {
+		fi.ErrorMessage = "This field should be specified as int."
+	} else {
+		fi.ErrorMessage = f.ErrorMessage
+	}
 	fi.Model = f
 	fi.V = nilV("")
 	return fi
@@ -19,9 +25,10 @@ func (f *IntegerField) New() FieldInterface {
 
 type IntegerFieldInstance struct {
 	FieldInstance
+	ErrorMessage string
 }
 
-func NewIntegerField(name string, vs Validators, ws ...Widget) Field {
+func NewIntegerField(name string, vs Validators, ws ...Widget) *IntegerField {
 	f := new(IntegerField)
 	f.name = name
 	f.validators = vs
@@ -44,7 +51,7 @@ func (f *IntegerFieldInstance) Clean(data Data) error {
 				m.IsNil = false
 				return nil
 			}
-			return errors.New("This field should be specified as int.")
+			return errors.New(f.ErrorMessage)
 		}
 	}
 	return nil

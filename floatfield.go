@@ -8,10 +8,16 @@ import (
 
 type FloatField struct {
 	BaseField
+	ErrorMessage string
 }
 
 func (f *FloatField) New() FieldInterface {
 	fi := new(FloatFieldInstance)
+	if f.ErrorMessage == "" {
+		fi.ErrorMessage = "This field should be specified as float."
+	} else {
+		fi.ErrorMessage = f.ErrorMessage
+	}
 	fi.Model = f
 	fi.V = nilV("")
 	return fi
@@ -19,9 +25,10 @@ func (f *FloatField) New() FieldInterface {
 
 type FloatFieldInstance struct {
 	FieldInstance
+	ErrorMessage string
 }
 
-func NewFloatField(name string, vs Validators, ws ...Widget) Field {
+func NewFloatField(name string, vs Validators, ws ...Widget) *FloatField {
 	f := new(FloatField)
 	f.name = name
 	f.validators = vs
@@ -44,7 +51,7 @@ func (f *FloatFieldInstance) Clean(data Data) error {
 				m.IsNil = false
 				return nil
 			}
-			return errors.New("This field should be specified as float.")
+			return errors.New(f.ErrorMessage)
 		}
 	}
 	return nil
