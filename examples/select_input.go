@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"github.com/bluele/gforms"
 	"net/http"
+	"path"
+	"runtime"
+	"text/template"
 )
 
 type Lang struct {
@@ -11,7 +14,7 @@ type Lang struct {
 }
 
 func main() {
-	formTpl := `<form method="post">%v<input type="submit"></form>`
+	tpl := template.Must(template.ParseFiles(path.Join(getTemplatePath(), "post_form.html")))
 	langForm := gforms.DefineModelForm(Lang{}, gforms.NewFields(
 		gforms.NewTextField(
 			"name",
@@ -22,6 +25,7 @@ func main() {
 				map[string]string{},
 				func() gforms.SelectOptions {
 					return gforms.StringSelectOptions([][]string{
+						{"Select...", "", "true", "false"},
 						{"Golang", "golang", "false", "false"},
 						{"Python", "python", "false", "false"},
 						{"C", "c", "false", "true"},
@@ -30,20 +34,25 @@ func main() {
 			),
 		),
 	))
-	http.HandleFunc("/lang", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
 		form := langForm(r)
 		if r.Method != "POST" {
-			w.Header().Set("Content-Type", "text/html")
-			fmt.Fprintf(w, fmt.Sprintf(formTpl, form.Html()))
+			tpl.Execute(w, form)
 			return
 		}
-		if form.IsValid() {
-			obj := form.GetModel()
-			fmt.Fprintf(w, "%v <=> %v", form.CleanedData, obj)
-		} else {
-			fmt.Fprintf(w, "%v", form.Errors())
+		if !form.IsValid() {
+			tpl.Execute(w, form)
+			return
 		}
+		lang := form.GetModel().(Lang)
+		fmt.Fprintf(w, "ok: %v", lang)
 	})
 
 	http.ListenAndServe(":9000", nil)
+}
+
+func getTemplatePath() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Join(path.Dir(filename), "templates")
 }

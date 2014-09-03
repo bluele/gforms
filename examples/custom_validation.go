@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"github.com/bluele/gforms"
 	"net/http"
+	"path"
 	"reflect"
+	"runtime"
+	"text/template"
 )
 
 type Lang struct {
@@ -31,6 +34,7 @@ func (vl CustomValidator) Validate(fi *gforms.FieldInstance, fo *gforms.FormInst
 }
 
 func main() {
+	tpl := template.Must(template.ParseFiles(path.Join(getTemplatePath(), "post_form.html")))
 	langForm := gforms.DefineModelForm(Lang{}, gforms.NewFields(
 		gforms.NewTextField(
 			"name",
@@ -44,17 +48,23 @@ func main() {
 	))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
 		form := langForm(r)
 		if r.Method != "POST" {
-			fmt.Fprintf(w, form.Html())
+			tpl.Execute(w, form)
 			return
 		}
-		if form.IsValid() { // Validate request body
-			lang := form.GetModel().(Lang)
-			fmt.Fprintf(w, "%v", lang)
-		} else {
-			fmt.Fprintf(w, "%v", form.Errors())
+		if !form.IsValid() {
+			tpl.Execute(w, form)
+			return
 		}
+		lang := form.GetModel().(Lang)
+		fmt.Fprintf(w, "ok: %v", lang)
 	})
 	http.ListenAndServe(":9000", nil)
+}
+
+func getTemplatePath() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Join(path.Dir(filename), "templates")
 }

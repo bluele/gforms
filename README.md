@@ -1,5 +1,6 @@
 # GForms
 A flexible forms validation and rendering library for golang web development. 
+Inspired by [django-forms](https://docs.djangoproject.com/en/dev/topics/forms/) and [wtforms](https://github.com/wtforms/wtforms).
 
 [![wercker status](https://app.wercker.com/status/51a7f6720baf8e67a28241790380d19b/s "wercker status")](https://app.wercker.com/project/bykey/51a7f6720baf8e67a28241790380d19b)
 
@@ -8,6 +9,7 @@ A flexible forms validation and rendering library for golang web development.
 * Validate HTTP request
 * Rendering form-html
 * Support parsing content-type "form-urlencoded", "json"
+* Support many widgets for form field.
 
 # Getting Started
 
@@ -16,6 +18,10 @@ A flexible forms validation and rendering library for golang web development.
 ```
 go get github.com/bluele/gforms
 ```
+
+## Examples
+
+See [examples](https://github.com/bluele/gforms/tree/master/examples).
 
 ## Usage
 
@@ -75,15 +81,11 @@ func main() {
     w.Header().Set("Content-Type", "text/html")
     form := userForm(r)
     if r.Method != "POST" {
-      if tpl.Execute(w, form) != nil {
-        panic(err)
-      }
+      tpl.Execute(w, form)
       return
     }
     if !form.IsValid() {
-      if tpl.Execute(w, form) != nil {
-        panic(err)
-      }
+      tpl.Execute(w, form)
       return
     }
     user := User{}

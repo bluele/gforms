@@ -40,22 +40,16 @@ func main() {
 		w.Header().Set("Content-Type", "text/html")
 		form := loginForm(r)
 		if r.Method != "POST" {
-			err := tpl.Execute(w, form)
-			if err != nil {
-				panic(err)
-			}
+			tpl.Execute(w, form)
 			return
 		}
 		if !form.IsValid() {
-			err := tpl.Execute(w, form)
-			if err != nil {
-				panic(err)
-			}
+			tpl.Execute(w, form)
 			return
 		}
 		user := User{}
 		form.MapTo(&user)
-		fmt.Fprintf(w, "%v", user)
+		fmt.Fprintf(w, "ok: %v", user)
 	})
 	http.ListenAndServe(":9000", nil)
 }
