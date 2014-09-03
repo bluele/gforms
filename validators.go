@@ -25,7 +25,7 @@ func Required(message ...string) required {
 	if len(message) > 0 {
 		vl.Message = message[0]
 	} else {
-		vl.Message = "This field is required"
+		vl.Message = "This field is required."
 	}
 	return vl
 }
