@@ -14,7 +14,7 @@ type Fields struct {
 }
 
 // Get ordered list for field object.
-func (fs *Fields) GetList() []Field {
+func (fs *Fields) List() []Field {
 	return fs.list
 }
 

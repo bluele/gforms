@@ -1,10 +1,8 @@
 <form method="post">
-{{range $i, $field := .GetFields}}
+{{range $i, $field := .Fields}}
   <label>{{$field.GetName}}: </label>{{$field.Html}}
-  {{if $field.HasError}}
-    {{range $ei, $err := $field.Errors}}
-    <label>{{$err}}</label>
-    {{end}}
+  {{range $ei, $err := $field.Errors}}
+  <label class="error">{{$err}}</label>
   {{end}}
   <br />
 {{end}}

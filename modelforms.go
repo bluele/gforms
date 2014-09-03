@@ -89,7 +89,7 @@ func newModelFormInstance(fs *Fields, ctx ModelContext) ModelFormInstance {
 	mfi := ModelFormInstance{
 		ModelContext: ctx,
 	}
-	mfi.Fields = newFieldInterfaces(fs)
+	mfi.fieldInstances = newFieldInterfaces(fs)
 	return mfi
 }
 

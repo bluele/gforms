@@ -13,25 +13,25 @@ type Form func(...*http.Request) *FormInstance
 type CleanedData map[string]interface{}
 
 type FormInstance struct {
-	Fields      *FieldInterfaces
-	Data        Data
-	CleanedData CleanedData
-	ParseError  error
+	fieldInstances *FieldInterfaces
+	Data           Data
+	CleanedData    CleanedData
+	ParseError     error
 }
 
 func (f *FormInstance) GetField(name string) (FieldInterface, bool) {
-	v, ok := f.Fields.nameMap[name]
+	v, ok := f.fieldInstances.nameMap[name]
 	return v, ok
 }
 
-func (f *FormInstance) GetFields() []FieldInterface {
-	return f.Fields.list
+func (f *FormInstance) Fields() []FieldInterface {
+	return f.fieldInstances.list
 }
 
 func (f *FormInstance) Errors() Errors {
 	errs := map[string][]string{}
 	var err []string
-	for _, field := range f.Fields.list {
+	for _, field := range f.fieldInstances.list {
 		name := field.GetModel().GetName()
 		err = field.Errors()
 		if err != nil && len(err) > 0 {
@@ -45,7 +45,7 @@ func (f *FormInstance) IsValid() bool {
 	isValid := true
 	f.CleanedData = CleanedData{}
 
-	for _, field := range f.Fields.list {
+	for _, field := range f.fieldInstances.list {
 		var err error
 		name := field.GetModel().GetName()
 		err = field.Clean(f.Data)
@@ -83,7 +83,7 @@ func (f *FormInstance) parseRequest(req *http.Request) error {
 
 func (f *FormInstance) Html() string {
 	var html bytes.Buffer
-	for _, field := range f.Fields.list {
+	for _, field := range f.fieldInstances.list {
 		html.WriteString(field.Html() + "\r\n")
 	}
 	return html.String()
@@ -92,7 +92,7 @@ func (f *FormInstance) Html() string {
 func DefineForm(fs *Fields) Form {
 	return func(r ...*http.Request) *FormInstance {
 		f := new(FormInstance)
-		f.Fields = newFieldInterfaces(fs)
+		f.fieldInstances = newFieldInterfaces(fs)
 		if len(r) > 0 {
 			f.ParseError = f.parseRequest(r[0])
 		}
