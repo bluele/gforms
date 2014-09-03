@@ -1,5 +1,5 @@
 # GForms
-A flexible forms validation and rendering library for golang web development. (under heavy development)
+A flexible forms validation and rendering library for golang web development. 
 
 [![wercker status](https://app.wercker.com/status/51a7f6720baf8e67a28241790380d19b/s "wercker status")](https://app.wercker.com/project/bykey/51a7f6720baf8e67a28241790380d19b)
 
@@ -39,7 +39,7 @@ userForm := gforms.DefineForm(gforms.NewFields(
 
 ### Validate HTTP request
 
-Server:
+Server ([code](https://github.com/bluele/gforms/examples/simple_form.go)):
 
 ```go
 type User struct {
@@ -48,6 +48,15 @@ type User struct {
 }
 
 func main() {
+  tplText := `<form method="post">
+{{range $i, $field := .Fields}}
+  <label>{{$field.GetName}}: </label>{{$field.Html}}
+  {{range $ei, $err := $field.Errors}}<label class="error">{{$err}}</label>{{end}}<br />
+{{end}}<input type="submit">
+</form>
+  `
+  tpl := template.Must(template.New("tpl").Parse(tplText))
+
   userForm := gforms.DefineForm(gforms.NewFields(
     gforms.NewTextField(
       "name",
@@ -62,19 +71,24 @@ func main() {
     ),
   ))
 
-  http.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
+  http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+    w.Header().Set("Content-Type", "text/html")
     form := userForm(r)
     if r.Method != "POST" {
-      fmt.Fprintf(w, form.Html())
+      if tpl.Execute(w, form) != nil {
+        panic(err)
+      }
       return
     }
-    if form.IsValid() { // Validate request body
-      user := User{}
-      form.MapTo(&user)
-      fmt.Fprintf(w, "%v", user)
-    } else {
-      fmt.Fprintf(w, "%v", form.Errors())
+    if !form.IsValid() {
+      if tpl.Execute(w, form) != nil {
+        panic(err)
+      }
+      return
     }
+    user := User{}
+    form.MapTo(&user)
+    fmt.Fprintf(w, "ok: %v", user)
   })
   http.ListenAndServe(":9000", nil)
 }
@@ -83,20 +97,31 @@ func main() {
 Client:
 
 ```
+# show html form
 $ curl -X GET localhost:9000/users
-<input type="text" name="name"></input>
-<input type="text" name="weight"></input>
+<form method="post">
+  <label>name: </label><input type="text" name="name" value=""></input>
+  <br />
 
+  <label>weight: </label><input type="text" name="weight" value=""></input>
+  <br />
+<input type="submit">
+</form>
+
+# valid request
 $ curl -X POST localhost:9000/users -d 'name=bluele&weight=71.9'
-{bluele 71.9}
+ok: {bluele 71.9}
 
 # "name" field is required.
 $ curl -X POST localhost:9000/users -d 'weight=71.9'
-map[name:This field is required]
+<form method="post">
+  <label>name: </label><input type="text" name="name" value=""></input>
+  <label class="error">This field is required.</label><br />
 
-# also support json request
-$ curl -X POST -H "Content-type: application/json" localhost:9000/users -d '{"name":"bluele", "weight":71.9}'
-{bluele 71.9}
+  <label>weight: </label><input type="text" name="weight" value="71.9"></input>
+  <br />
+<input type="submit">
+</form>
 ```
 
 ### Define Form by Struct Model
@@ -118,22 +143,8 @@ func initForm() {
       },
     ),
   ))
-}
-```
-
-### Validate HTTP request
-
-Server:
-
-```go
-type User struct {
-  Name   string  `gforms:"name"`
-  Weight float32 `gforms:"weight"`
-}
-
-func main() {
-  userForm := gforms.DefineModelForm(User{}, gforms.NewFields(
-    // override User.name field
+  /* equal an above defined form.
+  userForm := gforms.DefineForm(gforms.NewFields(
     gforms.NewTextField(
       "name",
       gforms.Validators{
@@ -141,50 +152,21 @@ func main() {
         gforms.MaxLengthValidator(32),
       },
     ),
+    gforms.NewFloatField(
+      "weight",
+      gforms.Validators{},
+    ),
   ))
-
-  http.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
-    form := userForm(r)
-    if r.Method != "POST" {
-      fmt.Fprintf(w, form.Html())
-      return
-    }
-    if form.IsValid() { // Validate request body
-      user := form.GetModel().(User)
-      fmt.Fprintf(w, "%v", user)
-    } else {
-      fmt.Fprintf(w, "%v", form.Errors())
-    }
-  })
-  http.ListenAndServe(":9000", nil)
+  */
 }
 ```
 
-Client:
+## Render HTML
 
-```
-$ curl -X GET localhost:9000/users
-<input type="text" name="name"></input>
-<input type="text" name="weight"></input>
-
-$ curl -X POST localhost:9000/users -d 'name=bluele&weight=71.9'
-{bluele 71.9}
-
-# "name" field is required.
-$ curl -X POST localhost:9000/users -d 'weight=71.9'
-map[name:This field is required]
-
-# also support json request
-$ curl -X POST -H "Content-type: application/json" localhost:9000/users -d '{"name":"bluele", "weight":71.9}'
-{bluele 71.9}
-```
-
-## Render HTML-Form
-
-### Simple form
+### FormInstance#Html
 
 ```go
-form := userForm()
+form := userForm(r)
 fmt.Println(form.Html())
 /* 
 # Output
@@ -192,6 +174,16 @@ fmt.Println(form.Html())
 <input type="text" name="weight"></input>
 */
 ```
+
+### FieldInstance#Html
+
+```
+form := userForm(r)
+fmt.Println(form.GetField("name").Html())
+```
+/* Output
+<input type="text" name="name"></input>
+*/
 
 ## Customize Formfield attributes
 
@@ -208,6 +200,12 @@ customForm := gforms.DefineForm(gforms.NewFields(
       },
     )),
 ))
+
+form := customForm(r)
+fmt.Println(form.Html())
+/* Output
+<input type="text" name="name" value="" class="custom"></input>
+*/
 ```
 
 ## Custom Validation error message
