@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"reflect"
 	"strconv"
-	"strings"
 	"unicode"
 	"unicode/utf16"
 	"unicode/utf8"
@@ -22,8 +21,6 @@ func parseReuqestBody(req *http.Request) (*Data, error) {
 	if req.Method == "POST" || req.Method == "PUT" || contentType != "" {
 		if contentType == "application/json" {
 			return bindJson(req)
-		} else if strings.Contains(contentType, "multipart/form-data") {
-			return bindMultiPartForm(req)
 		} else {
 			return bindForm(req)
 		}
@@ -74,22 +71,6 @@ func bindForm(req *http.Request) (*Data, error) {
 	for name, v := range req.Form {
 		if len(v) != 0 {
 			data[name] = newV(v[0], v, reflect.String)
-		}
-	}
-	return &data, nil
-}
-
-func bindMultiPartForm(req *http.Request) (*Data, error) {
-	req.ParseMultipartForm(32 << 20)
-	data := Data{}
-	for name, v := range req.MultipartForm.Value {
-		if len(v) != 0 {
-			data[name] = newV(v[0], v, reflect.String)
-		}
-	}
-	for name, v := range req.MultipartForm.File {
-		if len(v) != 0 {
-			data[name] = newV("", v, reflect.Array)
 		}
 	}
 	return &data, nil
