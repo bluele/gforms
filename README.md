@@ -226,13 +226,35 @@ userForm := gforms.DefineForm(gforms.NewFields(
 
 ## Support Fields
 
+### TextField
+
+It maps value to FormInstance.CleanedData as type `string`.
+
+```go
+gforms.NewTextField(
+  "text",
+  gforms.Validators{},
+)
+```
+
+### BooleanField
+
+It maps value to FormInstance.CleanedData as type `bool`.
+
+```go
+gforms.NewBooleanField(
+  "checked",
+  gforms.Validators{},
+)
+```
+
 ### IntegerField
 
 It maps value to FormInstance.CleanedData as type `int`.
 
 ```go
 gforms.NewIntegerField(
-  "name",
+  "number",
   gforms.Validators{},
 )
 ```
@@ -243,18 +265,7 @@ It maps value to FormInstance.CleanedData as type `float32` or `float64`.
 
 ```go
 gforms.NewFloatField(
-  "name",
-  gforms.Validators{},
-)
-```
-
-### TextField
-
-It maps value to FormInstance.CleanedData as type `string`.
-
-```go
-gforms.NewTextField(
-  "name",
+  "floatNumber",
   gforms.Validators{},
 )
 ```
@@ -265,7 +276,7 @@ It maps value to FormInstance.CleanedData as type `[]string`.
 
 ```go
 gforms.NewMultipleTextField(
-  "names",
+  "texts",
   gforms.Validators{},
 )
 ```
