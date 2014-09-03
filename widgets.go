@@ -1,5 +1,6 @@
 package gforms
 
+// Interface for all widgets.
 type Widget interface {
 	html(FieldInterface) string
 }

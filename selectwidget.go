@@ -87,6 +87,7 @@ func (wg *selectWidget) html(f FieldInterface) string {
 	return buffer.String()
 }
 
+// Generate select and options field: <select><option></option></select>
 func SelectWidget(attrs map[string]string, mk SelectOptionsMaker) *selectWidget {
 	wg := new(selectWidget)
 	if attrs == nil {
@@ -102,6 +103,7 @@ func SelectWidget(attrs map[string]string, mk SelectOptionsMaker) *selectWidget 
 	return wg
 }
 
+// Generate select-multiple and options field: <select multiple><option></option></select>
 func SelectMultipleWidget(attrs map[string]string, mk SelectOptionsMaker) *selectWidget {
 	wg := SelectWidget(attrs, mk)
 	wg.Multiple = true

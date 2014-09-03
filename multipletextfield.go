@@ -4,10 +4,12 @@ import (
 	"reflect"
 )
 
+// It maps value to FormInstance.CleanedData as type `[]string`.
 type MultipleTextField struct {
 	BaseField
 }
 
+// Create a new MultipleField instance.
 func (f *MultipleTextField) New() FieldInterface {
 	fi := new(MultipleTextFieldInstance)
 	fi.Model = f
@@ -15,10 +17,12 @@ func (f *MultipleTextField) New() FieldInterface {
 	return fi
 }
 
+// Instance for MultipleTextField.
 type MultipleTextFieldInstance struct {
 	FieldInstance
 }
 
+// Create a new MultipleTextField with validators and widgets.
 func NewMultipleTextField(name string, vs Validators, ws ...Widget) *MultipleTextField {
 	f := new(MultipleTextField)
 	f.name = name
@@ -31,6 +35,7 @@ func NewMultipleTextField(name string, vs Validators, ws ...Widget) *MultipleTex
 	return f
 }
 
+// Get a value from request data, and clean it as type `[]string`.
 func (f *MultipleTextFieldInstance) Clean(data Data) error {
 	m, hasField := data[f.Model.GetName()]
 	if hasField {
@@ -47,6 +52,7 @@ func (f *MultipleTextFieldInstance) html() string {
 	return ""
 }
 
+// Get as HTML format.
 func (f *MultipleTextFieldInstance) Html() string {
 	return fieldToHtml(f)
 }

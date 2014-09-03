@@ -5,10 +5,12 @@ import (
 	"reflect"
 )
 
+// It maps value to FormInstance.CleanedData as type `bool`.
 type BooleanField struct {
 	BaseField
 }
 
+// Create a new BooleanField instance.
 func (f *BooleanField) New() FieldInterface {
 	fi := new(BooleanFieldInstance)
 	fi.Model = f
@@ -16,6 +18,7 @@ func (f *BooleanField) New() FieldInterface {
 	return fi
 }
 
+// Instance for BooleanField.
 type BooleanFieldInstance struct {
 	FieldInstance
 }
@@ -25,6 +28,7 @@ type booleanContext struct {
 	Checked bool
 }
 
+// Create a new BooleanField with validators and widgets.
 func NewBooleanField(name string, vs Validators, ws ...Widget) *BooleanField {
 	f := new(BooleanField)
 	f.name = name
@@ -35,6 +39,7 @@ func NewBooleanField(name string, vs Validators, ws ...Widget) *BooleanField {
 	return f
 }
 
+// Get a value from request data, and clean it as type `bool`.
 func (f *BooleanFieldInstance) Clean(data Data) error {
 	m, hasField := data[f.GetName()]
 	if hasField {
@@ -73,6 +78,7 @@ func (f *BooleanFieldInstance) html() string {
 	return buffer.String()
 }
 
+// Get as HTML format.
 func (f *BooleanFieldInstance) Html() string {
 	return fieldToHtml(f)
 }

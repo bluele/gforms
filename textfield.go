@@ -4,10 +4,12 @@ import (
 	"reflect"
 )
 
+// It maps value to FormInstance.CleanedData as type `string`.
 type TextField struct {
 	BaseField
 }
 
+// Create a new TextField instance.
 func (f *TextField) New() FieldInterface {
 	fi := new(TextFieldInstance)
 	fi.Model = f
@@ -15,11 +17,12 @@ func (f *TextField) New() FieldInterface {
 	return fi
 }
 
+// Instance for TextField
 type TextFieldInstance struct {
 	FieldInstance
 }
 
-// Create a new field for string value.
+// Create a new TextField with validators and widgets.
 func NewTextField(name string, vs Validators, ws ...Widget) *TextField {
 	f := new(TextField)
 	f.name = name
@@ -30,6 +33,7 @@ func NewTextField(name string, vs Validators, ws ...Widget) *TextField {
 	return f
 }
 
+// Get a value from request data, and clean it as type `string`.
 func (f *TextFieldInstance) Clean(data Data) error {
 	m, hasField := data[f.Model.GetName()]
 	if hasField {
@@ -48,6 +52,7 @@ func (f *TextFieldInstance) html() string {
 	return renderTemplate("TextTypeField", newTemplateContext(f))
 }
 
+// Get as HTML format.
 func (f *TextFieldInstance) Html() string {
 	return fieldToHtml(f)
 }

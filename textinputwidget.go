@@ -24,6 +24,7 @@ func (wg *textInputWidget) html(f FieldInterface) string {
 	return buffer.String()
 }
 
+// Generate text input fiele: <input type="text" ...>
 func TextInputWidget(attrs map[string]string) Widget {
 	w := new(textInputWidget)
 	w.Type = "text"

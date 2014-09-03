@@ -18,6 +18,7 @@ const defaultTemplates = `
 {{end}}{{end}}
 `
 
+// all templates of Field and Widget
 var Template *template.Template
 
 func init() {

@@ -90,6 +90,7 @@ func (wg *checkboxMultipleWidget) html(f FieldInterface) string {
 	return buffer.String()
 }
 
+// Generate checkbox input field: <input type="checkbox" ...>
 func CheckboxMultipleWidget(attrs map[string]string, mk CheckboxOptionsMaker) *checkboxMultipleWidget {
 	wg := new(checkboxMultipleWidget)
 	if attrs == nil {

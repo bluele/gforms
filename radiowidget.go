@@ -90,6 +90,7 @@ func (wg *radioSelectWidget) html(f FieldInterface) string {
 	return buffer.String()
 }
 
+// Generate radio input field: <input type="radio" ...>
 func RadioSelectWidget(attrs map[string]string, mk RadioOptionsMaker) *radioSelectWidget {
 	wg := new(radioSelectWidget)
 	wg.Attrs = attrs
