@@ -39,7 +39,7 @@ userForm := gforms.DefineForm(gforms.NewFields(
 
 ### Validate HTTP request
 
-Server ([code](https://github.com/bluele/gforms/examples/simple_form.go)):
+Server ([code](https://github.com/bluele/gforms/blob/master/examples/simple_form.go)):
 
 ```go
 type User struct {
@@ -180,10 +180,11 @@ fmt.Println(form.Html())
 ```
 form := userForm(r)
 fmt.Println(form.GetField("name").Html())
-```
-/* Output
+/* 
+# Output
 <input type="text" name="name"></input>
 */
+```
 
 ## Customize Formfield attributes
 
@@ -203,7 +204,8 @@ customForm := gforms.DefineForm(gforms.NewFields(
 
 form := customForm(r)
 fmt.Println(form.Html())
-/* Output
+/* 
+# Output
 <input type="text" name="name" value="" class="custom"></input>
 */
 ```
