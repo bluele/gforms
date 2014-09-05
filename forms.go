@@ -12,6 +12,7 @@ type Form func(...*http.Request) *FormInstance
 // cleaned data for all fields.
 type CleanedData map[string]interface{}
 
+// FormInstance made by Form.
 type FormInstance struct {
 	fieldInstances *FieldInterfaces
 	Data           Data
@@ -19,27 +20,30 @@ type FormInstance struct {
 	ParseError     error
 }
 
-// Initialize with http request.
+// Create a new form instance from `http.Request`.
 func (f Form) FromRequest(r *http.Request) *FormInstance {
 	return f(r)
 }
 
-// Intialize with map object.
+// Create a new form instance from `url.Values`.
 func (f Form) FromUrlValues(uv url.Values) *FormInstance {
 	fi := f()
 	fi.parseUrlValues(uv)
 	return fi
 }
 
+// Get a `FieldInterface` for the given field name.
 func (f *FormInstance) GetField(name string) (FieldInterface, bool) {
 	v, ok := f.fieldInstances.nameMap[name]
 	return v, ok
 }
 
+// Get all `FieldInstance` on `FormInstance`.
 func (f *FormInstance) Fields() []FieldInterface {
 	return f.fieldInstances.list
 }
 
+// Return field errors if any fields have error after calling `FormInstance#IsValid`.
 func (f *FormInstance) Errors() Errors {
 	errs := map[string][]string{}
 	var err []string
@@ -53,6 +57,7 @@ func (f *FormInstance) Errors() Errors {
 	return errs
 }
 
+// Validation request data. If any fields have errors, this method returns false.
 func (f *FormInstance) IsValid() bool {
 	isValid := true
 	f.CleanedData = CleanedData{}
@@ -105,6 +110,7 @@ func (f *FormInstance) parseUrlValues(uv url.Values) error {
 	return nil
 }
 
+// Get html of each FieldInstance.
 func (f *FormInstance) Html() string {
 	var html bytes.Buffer
 	for _, field := range f.fieldInstances.list {
@@ -113,6 +119,7 @@ func (f *FormInstance) Html() string {
 	return html.String()
 }
 
+// Define a new form with specified fields.
 func DefineForm(fs *Fields) Form {
 	return func(r ...*http.Request) *FormInstance {
 		f := new(FormInstance)
