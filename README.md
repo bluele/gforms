@@ -188,6 +188,27 @@ fmt.Println(form.GetField("name").Html())
 */
 ```
 
+## Parse request data
+
+### (Default) Parse `*http.Request` to create a new `FormInstance`.
+
+```go
+http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+  form := userForm(r)  
+  ...
+}
+```
+
+### Parse `net/url.Values` to create a new `FormInstance`.
+
+```go
+http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+  // parse querystring values.
+  form := userForm.FromUrlValues(r.URL.Query())
+  ...
+}
+```
+
 ## Customize Formfield attributes
 
 ```go
