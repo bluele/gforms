@@ -13,7 +13,7 @@ import (
 	"unicode/utf8"
 )
 
-func parseReuqestBody(req *http.Request) (*Data, error) {
+func bindRequest(req *http.Request) (*Data, error) {
 	if isNilValue(req) {
 		return nil, errors.New("*http.Request is nil.")
 	}
@@ -76,7 +76,7 @@ func bindForm(req *http.Request) (*Data, error) {
 	return &data, nil
 }
 
-func bindValues(uv url.Values) (*Data, error) {
+func bindUrlValues(uv url.Values) (*Data, error) {
 	data := Data{}
 	for name, v := range uv {
 		if len(v) != 0 {

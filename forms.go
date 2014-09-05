@@ -3,6 +3,7 @@ package gforms
 import (
 	"bytes"
 	"net/http"
+	"net/url"
 	"reflect"
 )
 
@@ -16,6 +17,18 @@ type FormInstance struct {
 	Data           Data
 	CleanedData    CleanedData
 	ParseError     error
+}
+
+// Initialize with http request.
+func (f Form) FromRequest(r *http.Request) *FormInstance {
+	return f(r)
+}
+
+// Intialize with map object.
+func (f Form) FromUrlValues(uv url.Values) *FormInstance {
+	fi := f()
+	fi.parseUrlValues(uv)
+	return fi
 }
 
 func (f *FormInstance) GetField(name string) (FieldInterface, bool) {
@@ -69,7 +82,19 @@ func (f *FormInstance) IsValid() bool {
 }
 
 func (f *FormInstance) parseRequest(req *http.Request) error {
-	data, err := parseReuqestBody(req)
+	data, err := bindRequest(req)
+	if err != nil {
+		return err
+	}
+	if data == nil {
+		return nil
+	}
+	f.Data = *data
+	return nil
+}
+
+func (f *FormInstance) parseUrlValues(uv url.Values) error {
+	data, err := bindUrlValues(uv)
 	if err != nil {
 		return err
 	}
