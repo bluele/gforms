@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"github.com/bluele/gforms"
 	"net/http"
-	"path"
-	"runtime"
 	"text/template"
 )
 
@@ -14,8 +12,21 @@ type User struct {
 	Password string `gforms:"password"`
 }
 
+var tplText string = `
+<form method="post">
+{{range $i, $field := .Fields}}
+  <label>{{$field.GetName}}: </label>{{$field.Html}}
+  {{range $ei, $err := $field.Errors}}
+  <label class="error">{{$err}}</label>
+  {{end}}
+  <br />
+{{end}}
+<input type="submit">
+</form>
+`
+
 func main() {
-	tpl := template.Must(template.ParseFiles(path.Join(getTemplatePath(), "post_form.html")))
+	tpl, _ := template.New("tpl").Parse(tplText)
 	loginForm := gforms.DefineForm(
 		gforms.NewFields(
 			gforms.NewTextField(
@@ -52,9 +63,4 @@ func main() {
 		fmt.Fprintf(w, "ok: %v", user)
 	})
 	http.ListenAndServe(":9000", nil)
-}
-
-func getTemplatePath() string {
-	_, filename, _, _ := runtime.Caller(1)
-	return path.Join(path.Dir(filename), "templates")
 }
