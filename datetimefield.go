@@ -10,7 +10,7 @@ var DefaultDateFormat string = "2006-01-02"
 
 var DefaultDateTimeFormat string = "2006-01-02 15:04:05"
 
-// It maps value to FormInstance.CleanedData as type `string`.
+// It maps value to FormInstance.CleanedData as type `time.Time`.
 type DateTimeField struct {
 	BaseField
 	Format       string
