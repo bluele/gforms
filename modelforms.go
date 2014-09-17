@@ -8,6 +8,7 @@ import (
 
 type FieldContext struct {
 	Name  string
+	Type  reflect.Type
 	Value reflect.Value
 }
 
@@ -46,6 +47,11 @@ func (ctx ModelContext) generateFields() []Field {
 			case reflect.String:
 				field = NewMultipleTextField(c.Name, nil, nil)
 			}
+		case reflect.Struct:
+			switch c.Type.String() {
+			case "time.Time":
+				field = NewDateTimeField(c.Name, DefaultDateTimeFormat, nil)
+			}
 		}
 		if field != nil {
 			fields = append(fields, field)
@@ -79,6 +85,7 @@ func getModelContext(model interface{}) ModelContext {
 		}
 		c.FieldContexts = append(c.FieldContexts, FieldContext{
 			tag,
+			typeField.Type,
 			mValue.Field(i),
 		})
 	}

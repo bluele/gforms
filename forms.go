@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"time"
 )
 
 type Form func(...*http.Request) *FormInstance
@@ -189,6 +190,15 @@ func (fi *FormInstance) MapTo(model interface{}) {
 					value = false
 				}
 				valueField.SetBool(value)
+			case reflect.Struct:
+				switch typeField.Type.String() {
+				case "time.Time":
+					value, ok := v.(time.Time)
+					if !ok {
+						value = time.Time{}
+					}
+					valueField.Set(reflect.ValueOf(value))
+				}
 			}
 		}
 	}
