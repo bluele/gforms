@@ -304,6 +304,18 @@ gforms.NewMultipleTextField(
 )
 ```
 
+### DateTimeField
+
+It maps value to FormInstance.CleanedData as type `time.Time`.
+
+```go
+gforms.NewDateTimeField(
+  "date", 
+  DefaultDateTimeFormat, 
+  gforms.Validators{},  
+)
+```
+
 ## Support Validators
 
 ### Required validator
