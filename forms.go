@@ -14,12 +14,20 @@ type Form func(...*http.Request) *FormInstance
 // cleaned data for all fields.
 type CleanedData map[string]interface{}
 
+// FormValidator is a function that will run only if all field cleaning and
+// validation passes. It receives the CleanedData, providing an opportunity to
+// validate multiple values together, and return an array of top level error strings.
+type FormValidator func(cleanedData CleanedData) []string
+
+
 // FormInstance made by Form.
 type FormInstance struct {
 	fieldInstances *FieldInterfaces
 	Data           Data
 	CleanedData    CleanedData
 	ParseError     error
+	errors         []string
+	Validator      FormValidator
 }
 
 // Create a new form instance from `http.Request`.
@@ -45,18 +53,31 @@ func (f *FormInstance) Fields() []FieldInterface {
 	return f.fieldInstances.list
 }
 
+func (f *FormInstance) SetErrors(errors []string) {
+	f.errors = errors
+}
+
 // Return field errors if any fields have error after calling `FormInstance#IsValid`.
+// Also includes top level form errors.
 func (f *FormInstance) Errors() Errors {
 	errs := map[string][]string{}
 	var err []string
 	for _, field := range f.fieldInstances.list {
 		name := field.GetModel().GetName()
 		err = field.Errors()
-		if err != nil && len(err) > 0 {
+		if len(err) > 0 {
 			errs[name] = err
 		}
 	}
+	formErr := f.FormErrors()
+	if len(err) > 0 {
+		errs["form"] = formErr
+	}
 	return errs
+}
+
+func (f *FormInstance) FormErrors() []string {
+	return f.errors;
 }
 
 // Validation request data. If any fields have errors, this method returns false.
@@ -64,6 +85,7 @@ func (f *FormInstance) IsValid() bool {
 	isValid := true
 	f.CleanedData = CleanedData{}
 
+	// validate fields
 	for _, field := range f.fieldInstances.list {
 		var err error
 		name := field.GetModel().GetName()
@@ -85,6 +107,16 @@ func (f *FormInstance) IsValid() bool {
 			f.CleanedData[name] = field.GetV().Value
 		}
 	}
+
+	// validate top level form
+	if isValid && f.Validator != nil {
+		formErrs := f.Validator(f.CleanedData)
+		if len(formErrs) > 0 {
+			isValid = false
+			f.SetErrors(formErrs)
+		}
+	}
+
 	return isValid
 }
 

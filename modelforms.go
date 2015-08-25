@@ -101,7 +101,7 @@ func newModelFormInstance(fs *Fields, ctx ModelContext) ModelFormInstance {
 }
 
 // Define a new form with generating fields from model's attributes and specified fields.
-func DefineModelForm(model interface{}, fs *Fields) ModelForm {
+func DefineModelForm(model interface{}, fs *Fields, validator FormValidator) ModelForm {
 	ctx := getModelContext(model)
 	if fs == nil {
 		fs = NewFields()
@@ -114,6 +114,7 @@ func DefineModelForm(model interface{}, fs *Fields) ModelForm {
 		if len(r) > 0 {
 			f.ParseError = f.parseRequest(r[0])
 		}
+		f.Validator = validator
 		return &f
 	}
 }
