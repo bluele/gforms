@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"reflect"
 	"time"
+	"bitbucket.org/spaaza/go-sdk"
 )
 
 type Form func(...*http.Request) *FormInstance
@@ -198,6 +199,12 @@ func (fi *FormInstance) MapTo(model interface{}) {
 						value = time.Time{}
 					}
 					valueField.Set(reflect.ValueOf(value))
+				case "spaazaSDK.CustomTime": // FIXME: This is bad!
+				    value, ok := v.(time.Time)
+				    if !ok {
+				    	value = time.Time{}
+				    }
+				    valueField.Set(reflect.ValueOf(spaazaSDK.CustomTime{value}))
 				}
 			}
 		}
