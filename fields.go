@@ -70,6 +70,7 @@ type FieldInterface interface {
 	GetV() *V
 	GetWidget() Widget
 	SetInitial(string)
+	SetInitialBool(bool)
 	Clean(Data) error
 	Validate(*FormInstance) []string
 	Html() string
@@ -112,6 +113,10 @@ func (f *FieldInstance) SetErrors(errs []string) {
 
 func (f *FieldInstance) HasError() bool {
 	return len(f.errors) != 0
+}
+
+func (f *FieldInstance) SetInitialBool(v bool) {
+	f.V.Value = v;
 }
 
 func (f *FieldInstance) SetInitial(v string) {
