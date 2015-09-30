@@ -193,7 +193,7 @@ func RegexpValidator(regex string, message ...string) regexpValidator {
 
 // An EmailValidator that ensures a value looks like an email address.
 func EmailValidator(message ...string) regexpValidator {
-	regex := `^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`
+	regex := `(?i)^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`
 	if len(message) > 0 {
 		return RegexpValidator(regex, message[0])
 	} else {
