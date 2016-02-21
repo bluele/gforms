@@ -154,19 +154,31 @@ func (fi *FormInstance) MapTo(model interface{}) {
 		v, ok := fi.CleanedData[tag]
 		if ok {
 			valueField := mValue.Field(i)
-			switch valueField.Kind() {
+			workField := valueField
+			lastWorkField := workField
+
+			// Follow the indirection all the way in, and make sure each time we're creating something to
+			// set for the thing above it.
+			for workField.Kind() == reflect.Ptr {
+				tmpWorkField := reflect.New(workField.Type().Elem())
+				workField = tmpWorkField.Elem()
+				lastWorkField.Set(tmpWorkField)
+				lastWorkField = workField
+			}
+
+			switch workField.Kind() {
 			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 				value, ok := v.(int)
 				if !ok {
 					value = 0
 				}
-				valueField.SetInt(int64(value))
+				workField.SetInt(int64(value))
 			case reflect.Float32, reflect.Float64:
 				value, ok := v.(float64)
 				if !ok {
 					value = 0.0
 				}
-				valueField.SetFloat(value)
+				workField.SetFloat(value)
 			case reflect.String:
 				value, ok := v.(string)
 				if !ok {
@@ -177,27 +189,27 @@ func (fi *FormInstance) MapTo(model interface{}) {
 						value = ""
 					}
 				}
-				valueField.SetString(value)
+				workField.SetString(value)
 			case reflect.Slice:
 				value, ok := v.([]string)
 				if !ok {
 					value = []string{}
 				}
-				valueField.Set(reflect.ValueOf(value))
+				workField.Set(reflect.ValueOf(value))
 			case reflect.Bool:
 				value, ok := v.(bool)
 				if !ok {
 					value = false
 				}
-				valueField.SetBool(value)
+				workField.SetBool(value)
 			case reflect.Struct:
-				switch typeField.Type.String() {
+				switch workField.Type().String() {
 				case "time.Time":
 					value, ok := v.(time.Time)
 					if !ok {
 						value = time.Time{}
 					}
-					valueField.Set(reflect.ValueOf(value))
+					workField.Set(reflect.ValueOf(value))
 				}
 			}
 		}
