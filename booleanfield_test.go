@@ -66,3 +66,43 @@ func TestFalseBooleanField(t *testing.T) {
 		t.Error("validation error.")
 	}
 }
+
+func TestBooleanFieldDefaultRender(t *testing.T) {
+	Form := DefineForm(NewFields(
+		NewBooleanField("check", nil),
+	))
+	form := Form()
+	html := strings.TrimSpace(form.Html())
+	if html != `<input type="checkbox" name="check">` {
+		t.Errorf(`Incorrect HTML rendered for default boolean field: %s`, html)
+		return
+	}
+}
+
+func TestBooleanFieldInitialFalseRender(t *testing.T) {
+	Form := DefineForm(NewFields(
+		NewBooleanField("check", nil),
+	))
+	form := Form()
+	field, _ := form.GetField("check")
+	field.SetInitial("false")
+	html := strings.TrimSpace(form.Html())
+	if html != `<input type="checkbox" name="check">` {
+		t.Errorf(`Incorrect HTML rendered for SetInitial("false") boolean field: %s`, html)
+		return
+	}
+}
+
+func TestBooleanFieldInitialTrueRender(t *testing.T) {
+	Form := DefineForm(NewFields(
+		NewBooleanField("check", nil),
+	))
+	form := Form()
+	field, _ := form.GetField("check")
+	field.SetInitial("true")
+	html := strings.TrimSpace(form.Html())
+	if html != `<input type="checkbox" name="check" checked>` {
+		t.Errorf(`Incorrect HTML rendered for SetInitial("true") boolean field: %s`, html)
+		return
+	}
+}
