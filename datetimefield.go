@@ -59,11 +59,13 @@ func (f *DateTimeFieldInstance) Clean(data Data) error {
 		v := m.rawValueAsString()
 		m.Kind = reflect.Struct
 		if v != nil {
-			t, err := time.Parse(f.Format, *v)
-			if err != nil {
-				return errors.New(f.ErrorMessage)
+			if *v != "" {
+				t, err := time.Parse(f.Format, *v)
+				if err != nil {
+					return errors.New(f.ErrorMessage)
+				}
+				m.Value = t
 			}
-			m.Value = t
 			m.IsNil = false
 		}
 	}

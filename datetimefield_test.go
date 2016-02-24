@@ -99,3 +99,18 @@ func TestInputValidDateTimeFormat(t *testing.T) {
 		t.Error("given: " + obj.Date.String() + ", exptected: " + DefaultDateTimeFormat)
 	}
 }
+
+func TestInputDateNotRequired(t *testing.T) {
+	Form := DefineForm(NewFields(
+		NewDateTimeField("date", DefaultDateFormat, nil),
+	))
+	reqDate := ""
+	req, _ := http.NewRequest("POST", "/", strings.NewReader(url.Values{"date": {reqDate}}.Encode()))
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	form := Form(req)
+	if !form.IsValid() {
+		t.Error("Date required when it should not be.")
+		return
+	}
+}
