@@ -94,3 +94,43 @@ func TestTrueNullBooleanFieldJsonRequired(t *testing.T) {
 		t.Error("Null boolean field should be required.")
 	}
 }
+
+func TestNullBooleanFieldDefaultRender(t *testing.T) {
+	Form := DefineForm(NewFields(
+		NewNullBooleanField("check", nil),
+	))
+	form := Form()
+	html := strings.TrimSpace(form.Html())
+	if html != `<input type="checkbox" name="check">` {
+		t.Errorf(`Incorrect HTML rendered for default null boolean field: %s`, html)
+		return
+	}
+}
+
+func TestNullBooleanFieldInitialFalseRender(t *testing.T) {
+	Form := DefineForm(NewFields(
+		NewNullBooleanField("check", nil),
+	))
+	form := Form()
+	field, _ := form.GetField("check")
+	field.SetInitial("false")
+	html := strings.TrimSpace(form.Html())
+	if html != `<input type="checkbox" name="check">` {
+		t.Errorf(`Incorrect HTML rendered for SetInitial("false") null boolean field: %s`, html)
+		return
+	}
+}
+
+func TestNullBooleanFieldInitialTrueRender(t *testing.T) {
+	Form := DefineForm(NewFields(
+		NewNullBooleanField("check", nil),
+	))
+	form := Form()
+	field, _ := form.GetField("check")
+	field.SetInitial("true")
+	html := strings.TrimSpace(form.Html())
+	if html != `<input type="checkbox" name="check" checked>` {
+		t.Errorf(`Incorrect HTML rendered for SetInitial("true") null boolean field: %s`, html)
+		return
+	}
+}

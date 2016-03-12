@@ -3,6 +3,7 @@ package gforms
 import (
 	"bytes"
 	"reflect"
+	"strconv"
 )
 
 // It maps value to FormInstance.CleanedData as type `bool`.
@@ -63,6 +64,18 @@ func (f *BooleanFieldInstance) Clean(data Data) error {
 	nv.IsNil = false
 	f.V = nv
 	return nil
+}
+
+func (f *BooleanFieldInstance) SetInitial(v string) {
+	f.V.RawStr = v
+	f.V.RawValue = []string{v}
+	f.V.IsNil = false
+	b, err := strconv.ParseBool(v)
+	if err != nil {
+		f.V.IsNil = true
+	} else {
+		f.V.Value = b
+	}
 }
 
 func (f *BooleanFieldInstance) html() string {
