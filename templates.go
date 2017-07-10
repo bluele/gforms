@@ -14,7 +14,10 @@ const defaultTemplates = `
 {{end}}</select>{{end}}
 {{define "RadioWidget"}}{{$name := .Field.GetName}}{{range $idx, $val := .Options}}<input type="radio" name="{{$name | html}}" value="{{$val.Value | html}}"{{if or $val.Checked (eq $.Field.GetV.RawStr $val.Value) }} checked{{end}}{{if $val.Disabled}} disabled{{end}}>{{$val.Label | html}}
 {{end}}{{end}}
-{{define "CheckboxMultipleWidget"}}{{$name := .Field.GetName}}{{range $idx, $val := .Options}}<p class='checkbox'><input type="checkbox" name="{{$name | html}}" value="{{$val.Value | html}}"{{if $val.Checked}} checked{{end}}{{if $val.Disabled}} disabled{{end}}>{{$val.Label | html}}</p>
+{{define "CheckboxMultipleWidget"}}{{$name := .Field.GetName}}{{range $idx, $val := .Options}}<p class='checkbox'><input type="checkbox" name="{{$name | html}}" value="{{$val.Value | html}}"
+{{- range $k, $v := $.Field.GetV.RawValue}}{{if eq $v $val.Value}} checked{{end}}{{end}}
+{{- if $val.Checked}} checked{{end}}
+{{- if $val.Disabled}} disabled{{end}}>{{$val.Label | html}}</p>
 {{end}}{{end}}
 `
 
