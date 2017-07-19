@@ -191,22 +191,115 @@ func RegexpValidator(regex string, message ...string) regexpValidator {
 	return vl
 }
 
-// An EmailValidator that ensures a value looks like an email address.
+// An EmailValidator that ensures a value looks like an international email address.
 func EmailValidator(message ...string) regexpValidator {
-	regex := `(?i)^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`
-	if len(message) > 0 {
-		return RegexpValidator(regex, message[0])
-	} else {
-		return RegexpValidator(regex, "Enter a valid email address.")
-	}
+    regex := `^.+@.+$` // international email can include UTF8 characters.  Better to have false positives than false negatives.
+    if len(message) > 0 {
+        return RegexpValidator(regex, message[0])
+    } else {
+        return RegexpValidator(regex, "Enter a valid email address.")
+    }
+}
+
+// A FullNameValidator that ensures that we have a full name (e.g. 'John Doe').
+func FullNameValidator(message ...string) regexpValidator {
+    regex := `^[\p{L}]+( [\p{L}]+)+$`
+    if len(message) > 0 {
+        return RegexpValidator(regex, message[0])
+    } else {
+        return RegexpValidator(regex, "Enter a valid full name (i.e. 'John Doe').")
+    }
 }
 
 // An URLValidator that ensures a value looks like an url.
 func URLValidator(message ...string) regexpValidator {
-	regex := `^(https?|ftp)(:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+)$`
-	if len(message) > 0 {
-		return RegexpValidator(regex, message[0])
-	} else {
-		return RegexpValidator(regex, "Enter a valid url.")
+    regex := `^(https?|ftp)(:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+)$`
+    if len(message) > 0 {
+        return RegexpValidator(regex, message[0])
+    } else {
+        return RegexpValidator(regex, "Enter a valid url.")
+    }
+}
+
+type passwordStrengthValidator struct {
+	RequiredStrength int
+    Message string
+    Validator
+}
+// A PasswordStrengthValidator that ensures that the password is complex enough.
+// requiredStrength:
+//	0: Horrible
+//	1: Weak
+//	2: Medium
+//	3: Strong
+//	4: Very Strong		
+func PasswordStrengthValidator(requiredStrength int, message ...string) passwordStrengthValidator {
+    vl := passwordStrengthValidator{}
+    vl.RequiredStrength = requiredStrength
+    if len(message) > 0 {
+        vl.Message = message[0]
+    } else {
+        vl.Message = "Password isn't strong enough.  Add a mix of uppers, lowers, numbers, and special characters."
+    }
+    return vl
+}
+func (vl passwordStrengthValidator) Validate(fi *FieldInstance, fo *FormInstance) error {
+    v := fi.V
+    if v.IsNil || v.Kind != reflect.String {
+        return nil
+    }
+    sv := v.Value.(string)
+    
+    password := New(sv)
+    password.ProcessPassword()
+    if password.CommonPassword {
+		return errors.New("Your password is a common password.  Try making it harder to guess.")
 	}
+    if password.Score < vl.RequiredStrength {
+        return errors.New(vl.Message)
+    }
+    return nil
+}
+
+type fieldMatchValidator struct {
+	FieldMatchName string
+    Message string
+    Validator
+}
+// A FieldMatchValidator ensures that this field matches the field [FieldMatchName].
+func FieldMatchValidator(fieldMatchName string, message ...string) fieldMatchValidator {
+	vl := fieldMatchValidator{}
+	vl.FieldMatchName = fieldMatchName
+	if len(message) > 0 {
+        vl.Message = message[0]
+    } else {
+        vl.Message = fieldMatchName + " fields must match"
+    }
+    return vl
+}
+func (vl fieldMatchValidator) Validate(fi *FieldInstance, fo *FormInstance) error {
+    v := fi.V
+    if v.IsNil || v.Kind != reflect.String {
+        return nil
+    }
+    sv := v.Value.(string)
+    
+    if sv != fo.Data[vl.FieldMatchName].RawStr {
+        return errors.New(vl.Message)
+    }
+    return nil
+}
+
+type fnValidator struct {
+	ValidationFn func(fi *FieldInstance, fo *FormInstance) error
+    Validator
+}
+// A FieldMatchValidator ensures that this field matches the field [FieldMatchName].
+func FnValidator(validationFn func(fi *FieldInstance, fo *FormInstance) error) fnValidator {
+	vl := fnValidator{}
+	vl.ValidationFn = validationFn
+    return vl
+}
+func (vl fnValidator) Validate(fi *FieldInstance, fo *FormInstance) error {
+    return vl.ValidationFn(fi, fo)
 }

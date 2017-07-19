@@ -16,7 +16,7 @@ Inspired by [django-forms](https://docs.djangoproject.com/en/dev/topics/forms/) 
 ## Install
 
 ```
-go get github.com/bluele/gforms
+go get github.com/votezilla/gforms
 ```
 
 ## Examples

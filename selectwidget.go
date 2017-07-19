@@ -103,6 +103,19 @@ func SelectWidget(attrs map[string]string, mk SelectOptionsMaker) *selectWidget 
 	return wg
 }
 
+// SelectWidget constructor which is easier use.
+func SelectWidgetEasy(selectOptions [][2]string) *selectWidget {
+	return SelectWidget(
+		map[string]string{}, // attrs
+		// type SelectOptionsMaker func() SelectOptions
+		SelectOptionsMaker(func() SelectOptions {
+			ret := make(StringSelectOptions, len(selectOptions))
+			for i, option := range selectOptions {
+				ret[i] = []string{option[0], option[1], "false", "false"}
+			}
+			return ret
+}))}
+
 // Generate select-multiple and options field: <select multiple><option></option></select>
 func SelectMultipleWidget(attrs map[string]string, mk SelectOptionsMaker) *selectWidget {
 	wg := SelectWidget(attrs, mk)
