@@ -289,3 +289,17 @@ func (vl fieldMatchValidator) Validate(fi *FieldInstance, fo *FormInstance) erro
     }
     return nil
 }
+
+type fnValidator struct {
+	ValidationFn func(fi *FieldInstance, fo *FormInstance) error
+    Validator
+}
+// A FieldMatchValidator ensures that this field matches the field [FieldMatchName].
+func FnValidator(validationFn func(fi *FieldInstance, fo *FormInstance) error) fnValidator {
+	vl := fnValidator{}
+	vl.ValidationFn = validationFn
+    return vl
+}
+func (vl fnValidator) Validate(fi *FieldInstance, fo *FormInstance) error {
+    return vl.ValidationFn(fi, fo)
+}
